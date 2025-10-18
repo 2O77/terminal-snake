@@ -6,13 +6,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type Snake struct {
-	ColStart int
-	ColEnd   int
-	RowStart int
-	RowEnd   int
-}
-
 // 2 column wide 5 row long
 type SnakePiece struct {
 	RowEnd int
