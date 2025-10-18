@@ -112,9 +112,6 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	s.SetStyle(defStyle)
-	s.EnableMouse()
-	s.EnablePaste()
-	s.Clear()
 
 	pieces := []SnakePiece{
 		{29, 6}, {24, 6}, {19, 6}, {14, 6},
