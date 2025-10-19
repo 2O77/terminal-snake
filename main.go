@@ -102,15 +102,15 @@ func (g Game) renderSnake(headStyle tcell.Style, bodyStyle tcell.Style) {
 		p := (*snake)[i]
 
 		if i == 0 {
-			for row := p.ColEnd - 1; row <= p.ColEnd; row++ {
-				for col := p.RowEnd - 4; col <= p.RowEnd; col++ {
-					screen.SetContent(col, row, ' ', nil, headStyle)
+			for col := p.ColEnd - 1; col <= p.ColEnd; col++ {
+				for row := p.RowEnd - 4; row <= p.RowEnd; row++ {
+					screen.SetContent(row, col, ' ', nil, headStyle)
 				}
 			}
 		} else {
-			for row := p.ColEnd - 1; row <= p.ColEnd; row++ {
-				for col := p.RowEnd - 4; col <= p.RowEnd; col++ {
-					screen.SetContent(col, row, ' ', nil, bodyStyle)
+			for col := p.ColEnd - 1; col <= p.ColEnd; col++ {
+				for row := p.RowEnd - 4; row <= p.RowEnd; row++ {
+					screen.SetContent(row, col, ' ', nil, bodyStyle)
 				}
 			}
 		}
