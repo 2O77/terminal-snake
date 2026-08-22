@@ -128,7 +128,7 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		SetSnakeRight(snake, head)
+		// SetSnakeRight(snake, head)
 		*snakeDirection = DirectionRight
 	}
 	if key == tcell.KeyLeft {
@@ -138,7 +138,7 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		SetSnakeLeft(snake, head)
+		// SetSnakeLeft(snake, head)
 		*snakeDirection = DirectionLeft
 	}
 	if key == tcell.KeyUp {
@@ -148,7 +148,7 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		SetSnakeUp(snake, head)
+		// SetSnakeUp(snake, head)
 		*snakeDirection = DirectionUp
 	}
 	if key == tcell.KeyDown {
@@ -158,7 +158,7 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		SetSnakeDown(snake, head)
+		// SetSnakeDown(snake, head)
 		*snakeDirection = DirectionDown
 	}
 }
@@ -207,7 +207,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(300 * time.Millisecond)
+	ticker := time.NewTicker(20 * time.Millisecond)
 	go func() {
 		for range ticker.C {
 			switch *lastDirection {
