@@ -26,6 +26,14 @@ type Snake struct {
 	Body []Point
 }
 
+func SetScene(screen tcell.Screen, snake *Snake) {
+	screen.Clear()
+	setContent(snake, screen)
+	setTopbar(screen)
+	screen.Show()
+
+}
+
 func setContent(snake *Snake, screen tcell.Screen) {
 	backgroundStyle := tcell.StyleDefault.
 		Background(tcell.ColorDarkGreen).
@@ -184,11 +192,6 @@ func main() {
 
 	go func() {
 		for {
-			screen.Clear()
-			setContent(snake, screen)
-			setTopbar(screen)
-			screen.Show()
-
 			switch ev := screen.PollEvent().(type) {
 			case *tcell.EventResize:
 				screen.Sync()
@@ -200,6 +203,8 @@ func main() {
 					SetSnakeOnKeyEvent(screen, snake, lastDirection, ev.Key())
 				}
 			}
+
+			SetScene(screen, snake)
 		}
 	}()
 
@@ -217,10 +222,7 @@ func main() {
 				SetSnakeDown(snake, snake.Body[len(snake.Body)-1])
 			}
 
-			screen.Clear()
-			setContent(snake, screen)
-			setTopbar(screen)
-			screen.Show()
+			SetScene(screen, snake)
 		}
 	}()
 
