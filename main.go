@@ -34,13 +34,21 @@ func setContent(snake *Snake, screen tcell.Screen) {
 		Background(tcell.ColorGrey).
 		Foreground(tcell.Color182)
 
+	headStyle := tcell.StyleDefault.
+		Background(tcell.ColorDarkKhaki).
+		Foreground(tcell.Color182)
+
 	const runeValue rune = 0
 	var combining []rune = nil
 
 	screen.SetStyle(backgroundStyle)
 
-	for _, value := range snake.Body {
-		screen.SetContent(value.X, value.Y, runeValue, combining, snakeStyle)
+	for index, value := range snake.Body {
+		if index == len(snake.Body)-1 {
+			screen.SetContent(value.X, value.Y, runeValue, combining, headStyle)
+		} else {
+			screen.SetContent(value.X, value.Y, runeValue, combining, snakeStyle)
+		}
 	}
 
 }
@@ -162,6 +170,13 @@ func main() {
 		setContent(snake, screen)
 		setTopbar(screen)
 		screen.Show()
+		// select {
+		// case m := <-c:
+		// 	handle(m)
+		// case <-time.After(10 * time.Second):
+		// 	fmt.Println("timed out")
+		// }
+
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			screen.Sync()
