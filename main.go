@@ -170,12 +170,6 @@ func main() {
 		setContent(snake, screen)
 		setTopbar(screen)
 		screen.Show()
-		// select {
-		// case m := <-c:
-		// 	handle(m)
-		// case <-time.After(10 * time.Second):
-		// 	fmt.Println("timed out")
-		// }
 
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
