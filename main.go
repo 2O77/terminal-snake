@@ -63,9 +63,53 @@ func setTopbar(screen tcell.Screen) {
 	var combining []rune = nil
 
 	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
-
 }
-func SetSnake(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
+
+func SetSnakeRight(snake *Snake, head Point) {
+	snake.Body = snake.Body[1:]
+
+	newHead := Point{
+		X: head.X + 1,
+		Y: head.Y,
+	}
+
+	snake.Body = append(snake.Body, newHead)
+}
+
+func SetSnakeLeft(snake *Snake, head Point) {
+	snake.Body = snake.Body[1:]
+
+	newHead := Point{
+		X: head.X - 1,
+		Y: head.Y,
+	}
+
+	snake.Body = append(snake.Body, newHead)
+}
+
+func SetSnakeUp(snake *Snake, head Point) {
+	snake.Body = snake.Body[1:]
+
+	newHead := Point{
+		X: head.X,
+		Y: head.Y - 1,
+	}
+
+	snake.Body = append(snake.Body, newHead)
+}
+
+func SetSnakeDown(snake *Snake, head Point) {
+	snake.Body = snake.Body[1:]
+
+	newHead := Point{
+		X: head.X,
+		Y: head.Y + 1,
+	}
+
+	snake.Body = append(snake.Body, newHead)
+}
+
+func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
 	head := snake.Body[len(snake.Body)-1]
 	neck := snake.Body[len(snake.Body)-2]
 
@@ -75,17 +119,9 @@ func SetSnake(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, 
 				return
 			}
 		}
-		snake.Body = snake.Body[1:]
 
-		head := snake.Body[len(snake.Body)-1]
-		newHead := Point{
-			X: head.X + 1,
-			Y: head.Y,
-		}
-
-		snake.Body = append(snake.Body, newHead)
+		SetSnakeRight(snake, head)
 		*snakeDirection = DirectionRight
-
 	}
 	if key == tcell.KeyLeft {
 		if head.Y == neck.Y {
@@ -94,13 +130,7 @@ func SetSnake(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, 
 			}
 		}
 
-		snake.Body = snake.Body[1:]
-		newHead := Point{
-			X: head.X - 1,
-			Y: head.Y,
-		}
-
-		snake.Body = append(snake.Body, newHead)
+		SetSnakeLeft(snake, head)
 		*snakeDirection = DirectionLeft
 	}
 	if key == tcell.KeyUp {
@@ -109,15 +139,8 @@ func SetSnake(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, 
 				return
 			}
 		}
-		snake.Body = snake.Body[1:]
 
-		head := snake.Body[len(snake.Body)-1]
-		newHead := Point{
-			X: head.X,
-			Y: head.Y - 1,
-		}
-
-		snake.Body = append(snake.Body, newHead)
+		SetSnakeUp(snake, head)
 		*snakeDirection = DirectionUp
 	}
 	if key == tcell.KeyDown {
@@ -126,15 +149,8 @@ func SetSnake(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, 
 				return
 			}
 		}
-		snake.Body = snake.Body[1:]
 
-		head := snake.Body[len(snake.Body)-1]
-		newHead := Point{
-			X: head.X,
-			Y: head.Y + 1,
-		}
-
-		snake.Body = append(snake.Body, newHead)
+		SetSnakeDown(snake, head)
 		*snakeDirection = DirectionDown
 	}
 }
@@ -166,28 +182,51 @@ func main() {
 	screen.SetSize(50, 10)
 	defer quit(screen)
 
-	for {
-		screen.Clear()
-		setContent(snake, screen)
-		setTopbar(screen)
-		screen.Show()
+	go func() {
+		for {
+			screen.Clear()
+			setContent(snake, screen)
+			setTopbar(screen)
+			screen.Show()
 
-		timeChannel := time.Tick(1 * time.Second)
-		for time := range timeChannel {
-			log.Print("timer", time)
-		}
-
-		switch ev := screen.PollEvent().(type) {
-		case *tcell.EventResize:
-			screen.Sync()
-		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape {
-				screen.Fini()
-				os.Exit(0)
-			} else {
-				SetSnake(screen, snake, lastDirection, ev.Key())
+			switch ev := screen.PollEvent().(type) {
+			case *tcell.EventResize:
+				screen.Sync()
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyEscape {
+					screen.Fini()
+					os.Exit(0)
+				} else {
+					SetSnakeOnKeyEvent(screen, snake, lastDirection, ev.Key())
+				}
 			}
 		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-time.After(300 * time.Millisecond):
+				switch *lastDirection {
+				case DirectionRight:
+					SetSnakeRight(snake, snake.Body[len(snake.Body)-1])
+				case DirectionLeft:
+					SetSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+				case DirectionUp:
+					SetSnakeUp(snake, snake.Body[len(snake.Body)-1])
+				case DirectionDown:
+					SetSnakeDown(snake, snake.Body[len(snake.Body)-1])
+				}
+
+				screen.Clear()
+				setContent(snake, screen)
+				setTopbar(screen)
+				screen.Show()
+			}
+		}
+	}()
+
+	for {
 	}
 
 }
