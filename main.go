@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -170,6 +171,11 @@ func main() {
 		setContent(snake, screen)
 		setTopbar(screen)
 		screen.Show()
+
+		timeChannel := time.Tick(1 * time.Second)
+		for time := range timeChannel {
+			log.Print("timer", time)
+		}
 
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
