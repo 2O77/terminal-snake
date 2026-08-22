@@ -203,7 +203,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(20 * time.Millisecond)
+	ticker := time.NewTicker(40 * time.Millisecond)
 	go func() {
 		for range ticker.C {
 			switch *lastDirection {
