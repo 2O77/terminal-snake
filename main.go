@@ -35,7 +35,7 @@ func setContent(snake *Snake, screen tcell.Screen) {
 		Foreground(tcell.Color182)
 
 	headStyle := tcell.StyleDefault.
-		Background(tcell.ColorDarkKhaki).
+		Background(tcell.ColorHotPink).
 		Foreground(tcell.Color182)
 
 	const runeValue rune = 0
