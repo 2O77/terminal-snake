@@ -185,30 +185,10 @@ func main() {
 
 	defer quit(screen)
 
+	tickerY := time.NewTicker(60 * time.Millisecond)
 	go func() {
-		for {
-			switch ev := screen.PollEvent().(type) {
-			case *tcell.EventResize:
-				screen.Sync()
-			case *tcell.EventKey:
-				if ev.Key() == tcell.KeyEscape {
-					screen.Fini()
-					os.Exit(0)
-				} else {
-					SetSnakeDirectionOnKeyEvent(screen, snake, lastDirection, ev.Key())
-				}
-			}
-		}
-	}()
-
-	ticker := time.NewTicker(40 * time.Millisecond)
-	go func() {
-		for range ticker.C {
+		for range tickerY.C {
 			switch *lastDirection {
-			case DirectionRight:
-				MoveSnakeRight(snake, snake.Body[len(snake.Body)-1])
-			case DirectionLeft:
-				MoveSnakeLeft(snake, snake.Body[len(snake.Body)-1])
 			case DirectionUp:
 				MoveSnakeUp(snake, snake.Body[len(snake.Body)-1])
 			case DirectionDown:
@@ -219,7 +199,32 @@ func main() {
 		}
 	}()
 
+	tickerX := time.NewTicker(40 * time.Millisecond)
+	go func() {
+		for range tickerX.C {
+			switch *lastDirection {
+			case DirectionRight:
+				MoveSnakeRight(snake, snake.Body[len(snake.Body)-1])
+			case DirectionLeft:
+				MoveSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+			}
+
+			SetScene(screen, snake)
+		}
+	}()
+
 	for {
+		switch ev := screen.PollEvent().(type) {
+		case *tcell.EventResize:
+			screen.Sync()
+		case *tcell.EventKey:
+			if ev.Key() == tcell.KeyEscape {
+				screen.Fini()
+				os.Exit(0)
+			} else {
+				SetSnakeDirectionOnKeyEvent(screen, snake, lastDirection, ev.Key())
+			}
+		}
 	}
 
 }
