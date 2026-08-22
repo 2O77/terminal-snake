@@ -73,7 +73,7 @@ func setTopbar(screen tcell.Screen) {
 	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
 }
 
-func SetSnakeRight(snake *Snake, head Point) {
+func MoveSnakeRight(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
@@ -84,7 +84,7 @@ func SetSnakeRight(snake *Snake, head Point) {
 	snake.Body = append(snake.Body, newHead)
 }
 
-func SetSnakeLeft(snake *Snake, head Point) {
+func MoveSnakeLeft(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
@@ -95,7 +95,7 @@ func SetSnakeLeft(snake *Snake, head Point) {
 	snake.Body = append(snake.Body, newHead)
 }
 
-func SetSnakeUp(snake *Snake, head Point) {
+func MoveSnakeUp(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
@@ -106,7 +106,7 @@ func SetSnakeUp(snake *Snake, head Point) {
 	snake.Body = append(snake.Body, newHead)
 }
 
-func SetSnakeDown(snake *Snake, head Point) {
+func MoveSnakeDown(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
@@ -117,7 +117,7 @@ func SetSnakeDown(snake *Snake, head Point) {
 	snake.Body = append(snake.Body, newHead)
 }
 
-func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
+func SetSnakeDirectionOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
 	head := snake.Body[len(snake.Body)-1]
 	neck := snake.Body[len(snake.Body)-2]
 
@@ -195,7 +195,7 @@ func main() {
 					screen.Fini()
 					os.Exit(0)
 				} else {
-					SetSnakeOnKeyEvent(screen, snake, lastDirection, ev.Key())
+					SetSnakeDirectionOnKeyEvent(screen, snake, lastDirection, ev.Key())
 				}
 			}
 
@@ -208,13 +208,13 @@ func main() {
 		for range ticker.C {
 			switch *lastDirection {
 			case DirectionRight:
-				SetSnakeRight(snake, snake.Body[len(snake.Body)-1])
+				MoveSnakeRight(snake, snake.Body[len(snake.Body)-1])
 			case DirectionLeft:
-				SetSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+				MoveSnakeLeft(snake, snake.Body[len(snake.Body)-1])
 			case DirectionUp:
-				SetSnakeUp(snake, snake.Body[len(snake.Body)-1])
+				MoveSnakeUp(snake, snake.Body[len(snake.Body)-1])
 			case DirectionDown:
-				SetSnakeDown(snake, snake.Body[len(snake.Body)-1])
+				MoveSnakeDown(snake, snake.Body[len(snake.Body)-1])
 			}
 
 			SetScene(screen, snake)
