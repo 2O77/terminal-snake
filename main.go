@@ -203,26 +203,24 @@ func main() {
 		}
 	}()
 
+	ticker := time.NewTicker(300 * time.Millisecond)
 	go func() {
-		for {
-			select {
-			case <-time.After(300 * time.Millisecond):
-				switch *lastDirection {
-				case DirectionRight:
-					SetSnakeRight(snake, snake.Body[len(snake.Body)-1])
-				case DirectionLeft:
-					SetSnakeLeft(snake, snake.Body[len(snake.Body)-1])
-				case DirectionUp:
-					SetSnakeUp(snake, snake.Body[len(snake.Body)-1])
-				case DirectionDown:
-					SetSnakeDown(snake, snake.Body[len(snake.Body)-1])
-				}
-
-				screen.Clear()
-				setContent(snake, screen)
-				setTopbar(screen)
-				screen.Show()
+		for range ticker.C {
+			switch *lastDirection {
+			case DirectionRight:
+				SetSnakeRight(snake, snake.Body[len(snake.Body)-1])
+			case DirectionLeft:
+				SetSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+			case DirectionUp:
+				SetSnakeUp(snake, snake.Body[len(snake.Body)-1])
+			case DirectionDown:
+				SetSnakeDown(snake, snake.Body[len(snake.Body)-1])
 			}
+
+			screen.Clear()
+			setContent(snake, screen)
+			setTopbar(screen)
+			screen.Show()
 		}
 	}()
 
