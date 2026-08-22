@@ -198,8 +198,6 @@ func main() {
 					SetSnakeDirectionOnKeyEvent(screen, snake, lastDirection, ev.Key())
 				}
 			}
-
-			SetScene(screen, snake)
 		}
 	}()
 
