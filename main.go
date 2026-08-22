@@ -128,7 +128,6 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		// SetSnakeRight(snake, head)
 		*snakeDirection = DirectionRight
 	}
 	if key == tcell.KeyLeft {
@@ -138,7 +137,6 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		// SetSnakeLeft(snake, head)
 		*snakeDirection = DirectionLeft
 	}
 	if key == tcell.KeyUp {
@@ -148,7 +146,6 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		// SetSnakeUp(snake, head)
 		*snakeDirection = DirectionUp
 	}
 	if key == tcell.KeyDown {
@@ -158,7 +155,6 @@ func SetSnakeOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastD
 			}
 		}
 
-		// SetSnakeDown(snake, head)
 		*snakeDirection = DirectionDown
 	}
 }
