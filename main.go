@@ -187,7 +187,6 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 
-	screen.SetSize(50, 10)
 	defer quit(screen)
 
 	go func() {
