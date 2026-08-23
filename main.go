@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"os"
-	"terminal-snake/models"
+	model "terminal-snake/models"
 	board_view "terminal-snake/views"
 	"time"
 
@@ -45,64 +45,9 @@ const (
 // 	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
 // }
 
-func MoveSnakeRight(snake *models.Snake, head models.Box) {
-	snake.Body = snake.Body[1:]
-
-	newHead := models.Box{
-		X: head.X + 1,
-		Y: head.Y,
-	}
-
-	snake.Body = append(snake.Body, newHead)
-}
-
-func MoveSnakeLeft(snake *models.Snake, head models.Box) {
-	snake.Body = snake.Body[1:]
-
-	newHead := models.Box{
-		X: head.X - 1,
-		Y: head.Y,
-	}
-
-	snake.Body = append(snake.Body, newHead)
-}
-
-func MoveSnakeUp(snake *models.Snake, head models.Box) {
-	snake.Body = snake.Body[1:]
-
-	newHead := models.Box{
-		X: head.X,
-		Y: head.Y - 1,
-	}
-
-	snake.Body = append(snake.Body, newHead)
-}
-
-func MoveSnakeDown(snake *models.Snake, head models.Box) {
-	snake.Body = snake.Body[1:]
-
-	newHead := models.Box{
-		X: head.X,
-		Y: head.Y + 1,
-	}
-
-	snake.Body = append(snake.Body, newHead)
-}
-
 func main() {
 	logFile := initLogger()
 	defer logFile.Close()
-
-	var snake *models.Snake = &models.Snake{
-		Body: []models.Box{
-			{0, 0},
-			{1, 0},
-			{2, 0},
-			{3, 0},
-			{4, 0},
-			{5, 0},
-		},
-	}
 
 	initialDir := DirectionRight
 	var lastDirection *LastDirection = &initialDir
@@ -116,26 +61,33 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 
+	snake := model.NewSnake()
+	apple := model.NewApple()
+
 	view := board_view.NewView(
 		board_view.ViewDeps{
-			snake, screen,
+			apple,
+			snake,
+			screen,
+			model.BoardBoxColumns,
+			model.BoardBoxRows,
 		},
 	)
 
 	defer quit(screen)
 
-	tickerX := time.NewTicker(500 * time.Millisecond)
+	tickerX := time.NewTicker(300 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
 			switch *lastDirection {
 			case DirectionRight:
-				MoveSnakeRight(snake, snake.Body[len(snake.Body)-1])
+				snake.MoveSnakeRight()
 			case DirectionLeft:
-				MoveSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+				snake.MoveSnakeLeft()
 			case DirectionUp:
-				MoveSnakeUp(snake, snake.Body[len(snake.Body)-1])
+				snake.MoveSnakeUp()
 			case DirectionDown:
-				MoveSnakeDown(snake, snake.Body[len(snake.Body)-1])
+				snake.MoveSnakeDown()
 			}
 
 			view.SetView()

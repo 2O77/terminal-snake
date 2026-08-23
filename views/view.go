@@ -2,20 +2,26 @@ package board_view
 
 import (
 	"log"
-	"terminal-snake/models"
+	model "terminal-snake/models"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 type ViewDeps struct {
-	Snake  *models.Snake
-	Screen tcell.Screen
+	Apple           *model.Apple
+	Snake           *model.Snake
+	Screen          tcell.Screen
+	BoardBoxColumns int
+	BoardBoxRows    int
 }
 
 type View struct {
-	snake            *models.Snake
+	apple            *model.Apple
+	snake            *model.Snake
 	screen           tcell.Screen
 	boardCoordinates ViewBoardCoordinates
+	rune             rune
+	combining        []rune
 }
 
 type ViewBoardCoordinates struct {
@@ -25,21 +31,23 @@ type ViewBoardCoordinates struct {
 	boardBottomY int
 }
 
-const BoardBoxColumns = 40
-const BoardBoxRows = 20
-
 const (
-	boardWidthViewCells  = BoardBoxColumns * 2
-	boardHeightViewCells = BoardBoxRows
+	boardWidthViewCells  = model.BoardBoxColumns * 2
+	boardHeightViewCells = model.BoardBoxRows
 )
 
 func NewView(deps ViewDeps) View {
 	boardCoordinates := ViewBoardCoordinates{}
+	const runeValue rune = 0
+	var combining []rune = nil
 
 	return View{
+		deps.Apple,
 		deps.Snake,
 		deps.Screen,
 		boardCoordinates,
+		runeValue,
+		combining,
 	}
 }
 
@@ -53,21 +61,19 @@ func (v View) SetView() {
 
 	v.boardCoordinates = viewBoardCoordinates
 
-	v.setContent()
+	v.setBackground()
 	v.setSnake()
+	v.setApple()
 	// setTopbar(screen)
 	v.screen.Show()
 }
 
-func (v View) setContent() {
+func (v View) setBackground() {
 	unoccupiedCellStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
 
 	backgroundStyle := tcell.StyleDefault.
 		Background(tcell.ColorDarkGreen).
 		Foreground(tcell.ColorWhite)
-
-	const runeValue rune = 0
-	var combining []rune = nil
 
 	v.screen.SetStyle(unoccupiedCellStyle)
 
@@ -76,11 +82,10 @@ func (v View) setContent() {
 	for viewColumn := 0; viewColumn < boardWidthViewCells; viewColumn += 2 {
 		for viewRow := 0; viewRow < boardHeightViewCells; viewRow += 1 {
 			for index := range 2 {
-				v.screen.SetContent(x+viewColumn+index, y+viewRow, runeValue, combining, backgroundStyle)
+				v.screen.SetContent(x+viewColumn+index, y+viewRow, v.rune, v.combining, backgroundStyle)
 			}
 		}
 	}
-
 }
 
 func (v View) setSnake() {
@@ -94,12 +99,12 @@ func (v View) setSnake() {
 		Foreground(tcell.Color182)
 
 	headStyle := tcell.StyleDefault.
-		Background(tcell.ColorHotPink).
+		Background(tcell.ColorPaleVioletRed).
 		Foreground(tcell.Color182)
 
-	snakeWithViewCells := models.Snake{}
+	snakeWithViewCells := model.Snake{}
 
-	snakeWithViewCells.Body = make([]models.Box, len(snake.Body))
+	snakeWithViewCells.Body = make([]model.Box, len(snake.Body))
 	copy(snakeWithViewCells.Body, snake.Body)
 
 	for index, value := range snakeWithViewCells.Body {
@@ -120,9 +125,26 @@ func (v View) setSnake() {
 			}
 		} else {
 			for index := range 2 {
-				v.screen.SetContent(x+value.X+index, y+value.Y, runeValue, combining, snakeStyle)
+				v.screen.SetContent(x+value.X+index, y+value.Y, v.rune, v.combining, snakeStyle)
 			}
 		}
+	}
+}
+
+func (v View) setApple() {
+	appleStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorDarkRed)
+
+	boardX, boardY := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
+	appleWithViewCells := model.Apple{
+		X: v.apple.X * 2,
+		Y: v.apple.Y,
+	}
+
+	x := boardX + appleWithViewCells.X
+	y := boardY + appleWithViewCells.Y
+
+	for index := range 2 {
+		v.screen.SetContent(x+index, y, v.rune, v.combining, appleStyle)
 	}
 }
 
