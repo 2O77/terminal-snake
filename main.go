@@ -234,11 +234,6 @@ func main() {
 		}
 	}()
 
-	directionDown := DirectionDown
-	directionUp := DirectionUp
-	directionLeft := DirectionLeft
-	directionRight := DirectionRight
-
 	for {
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
@@ -249,23 +244,23 @@ func main() {
 				os.Exit(0)
 			}
 			if ev.Key() == tcell.KeyUp {
-				if lastDirection != &directionDown {
-					lastDirection = &directionUp
+				if *lastDirection != DirectionDown {
+					*lastDirection = DirectionUp
 				}
 			}
 			if ev.Key() == tcell.KeyDown {
-				if lastDirection != &directionUp {
-					lastDirection = &directionDown
+				if *lastDirection != DirectionUp {
+					*lastDirection = DirectionDown
 				}
 			}
 			if ev.Key() == tcell.KeyLeft {
-				if lastDirection != &directionRight {
-					lastDirection = &directionLeft
+				if *lastDirection != DirectionRight {
+					*lastDirection = DirectionLeft
 				}
 			}
 			if ev.Key() == tcell.KeyRight {
-				if lastDirection != &directionLeft {
-					lastDirection = &directionRight
+				if *lastDirection != DirectionLeft {
+					*lastDirection = DirectionRight
 				}
 			}
 		}
