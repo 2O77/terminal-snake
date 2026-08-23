@@ -26,58 +26,107 @@ type Snake struct {
 	Body []Point
 }
 
+type ViewBoardCoordinates struct {
+	boardLeftX   int
+	boardRightX  int
+	boardTopY    int
+	boardBottomY int
+}
+
+const BoardModelColumns = 40
+const BoardModelRows = 20
+
+const (
+	boardWidthViewCells  = BoardModelColumns * 2
+	boardHeightViewCells = BoardModelRows
+)
+
 func SetScene(screen tcell.Screen, snake *Snake) {
 	screen.Clear()
 	setContent(snake, screen)
-	setTopbar(screen)
+	// setTopbar(screen)
 	screen.Show()
 
 }
 
 func setContent(snake *Snake, screen tcell.Screen) {
+	unoccupiedCellStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
+
 	backgroundStyle := tcell.StyleDefault.
 		Background(tcell.ColorDarkGreen).
 		Foreground(tcell.ColorWhite)
 
+	const runeValue rune = 0
+	var combining []rune = nil
+
+	screen.SetStyle(unoccupiedCellStyle)
+
+	viewBoardCoordinates, ok := viewBoardCoordinates(screen)
+	if !ok {
+		log.Fatal()
+	}
+
+	for viewColumn := 0; viewColumn < boardWidthViewCells; viewColumn += 2 {
+		for viewRow := 0; viewRow < boardHeightViewCells; viewRow += 1 {
+			for index := range 2 {
+				screen.SetContent(viewBoardCoordinates.boardLeftX+viewColumn+index, viewBoardCoordinates.boardTopY+viewRow, runeValue, combining, backgroundStyle)
+			}
+		}
+	}
+
+	setSnake(screen, snake, viewBoardCoordinates)
+
+}
+
+func setSnake(screen tcell.Screen, snake *Snake, board ViewBoardCoordinates) {
+	const runeValue rune = 0
+	var combining []rune = nil
+
 	snakeStyle := tcell.StyleDefault.
-		Background(tcell.ColorGrey).
+		Background(tcell.ColorRed).
 		Foreground(tcell.Color182)
 
 	headStyle := tcell.StyleDefault.
 		Background(tcell.ColorHotPink).
 		Foreground(tcell.Color182)
 
-	const runeValue rune = 0
-	var combining []rune = nil
+	head := snake.Body[len(snake.Body)-1]
 
-	screen.SetStyle(backgroundStyle)
+	log.Println(head.X, head.Y, board.boardLeftX, board.boardRightX)
+
+	if head.X < 0 || head.X > boardWidthViewCells || head.Y < 0 || head.Y > boardHeightViewCells {
+		return
+	}
 
 	for index, value := range snake.Body {
 		if index == len(snake.Body)-1 {
-			screen.SetContent(value.X, value.Y, runeValue, combining, headStyle)
+			for index := range 2 {
+				screen.SetContent(board.boardLeftX+value.X+index-1, board.boardTopY+value.Y, runeValue, combining, headStyle)
+			}
 		} else {
-			screen.SetContent(value.X, value.Y, runeValue, combining, snakeStyle)
+			for index := range 2 {
+				screen.SetContent(board.boardLeftX+value.X+index-1, board.boardTopY+value.Y, runeValue, combining, snakeStyle)
+			}
 		}
 	}
-
 }
 
-func setTopbar(screen tcell.Screen) {
-	backgroundStyle := tcell.StyleDefault.
-		Background(tcell.ColorBlack).
-		Foreground(tcell.ColorWhite)
+// func setTopbar(screen tcell.Screen) {
+// 	backgroundStyle := tcell.StyleDefault.
+// 		Background(tcell.ColorBlack).
+// 		Foreground(tcell.ColorWhite)
 
-	const runeValue rune = 0
-	var combining []rune = nil
+// 	const runeValue rune = 0
+// 	var combining []rune = nil
 
-	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
-}
+// 	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
+// }
 
 func MoveSnakeRight(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
-		X: head.X + 1,
+		X: head.X + 2,
 		Y: head.Y,
 	}
 
@@ -88,7 +137,7 @@ func MoveSnakeLeft(snake *Snake, head Point) {
 	snake.Body = snake.Body[1:]
 
 	newHead := Point{
-		X: head.X - 1,
+		X: head.X - 2,
 		Y: head.Y,
 	}
 
@@ -115,6 +164,27 @@ func MoveSnakeDown(snake *Snake, head Point) {
 	}
 
 	snake.Body = append(snake.Body, newHead)
+}
+
+func viewBoardCoordinates(screen tcell.Screen) (result ViewBoardCoordinates, ok bool) {
+	w, h := screen.Size()
+
+	if w < boardWidthViewCells || h < boardHeightViewCells {
+		ok = false
+		return
+	}
+
+	ok = true
+
+	result.boardLeftX = (w - boardWidthViewCells) / 2
+
+	result.boardRightX = result.boardLeftX + boardWidthViewCells - 2
+
+	result.boardTopY = (h - boardHeightViewCells) / 2
+
+	result.boardBottomY = result.boardTopY + boardHeightViewCells - 1
+
+	return
 }
 
 func SetSnakeDirectionOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
@@ -160,14 +230,17 @@ func SetSnakeDirectionOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirecti
 }
 
 func main() {
+	logFile := initLogger()
+	defer logFile.Close()
+
 	var snake *Snake = &Snake{
 		Body: []Point{
-			{5, 10},
-			{6, 10},
-			{7, 10},
-			{8, 10},
-			{9, 10},
-			{10, 10},
+			{0, 0},
+			{1, 0},
+			{2, 0},
+			{3, 0},
+			{4, 0},
+			{5, 0},
 		},
 	}
 
@@ -185,21 +258,7 @@ func main() {
 
 	defer quit(screen)
 
-	tickerY := time.NewTicker(60 * time.Millisecond)
-	go func() {
-		for range tickerY.C {
-			switch *lastDirection {
-			case DirectionUp:
-				MoveSnakeUp(snake, snake.Body[len(snake.Body)-1])
-			case DirectionDown:
-				MoveSnakeDown(snake, snake.Body[len(snake.Body)-1])
-			}
-
-			SetScene(screen, snake)
-		}
-	}()
-
-	tickerX := time.NewTicker(40 * time.Millisecond)
+	tickerX := time.NewTicker(100 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
 			switch *lastDirection {
@@ -207,6 +266,10 @@ func main() {
 				MoveSnakeRight(snake, snake.Body[len(snake.Body)-1])
 			case DirectionLeft:
 				MoveSnakeLeft(snake, snake.Body[len(snake.Body)-1])
+			case DirectionUp:
+				MoveSnakeUp(snake, snake.Body[len(snake.Body)-1])
+			case DirectionDown:
+				MoveSnakeDown(snake, snake.Body[len(snake.Body)-1])
 			}
 
 			SetScene(screen, snake)
@@ -235,4 +298,14 @@ func quit(s tcell.Screen) {
 	if maybePanic != nil {
 		panic(maybePanic)
 	}
+}
+
+func initLogger() *os.File {
+	file, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Log dosyası açılamadı: %v", err)
+	}
+
+	log.SetOutput(file)
+	return file
 }
