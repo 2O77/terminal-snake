@@ -19,21 +19,6 @@ const (
 	DirectionRight LastDirection = "RIGHT"
 )
 
-type ViewBoardCoordinates struct {
-	boardLeftX   int
-	boardRightX  int
-	boardTopY    int
-	boardBottomY int
-}
-
-const BoardBoxColumns = 40
-const BoardBoxRows = 20
-
-const (
-	boardWidthViewCells  = BoardBoxColumns * 2
-	boardHeightViewCells = BoardBoxRows
-)
-
 // func setTopbar(screen tcell.Screen) {
 // 	backgroundStyle := tcell.StyleDefault.
 // 		Background(tcell.ColorBlack).
@@ -61,8 +46,10 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 
-	snake := model.NewSnake()
 	apple := model.NewApple()
+	snake := model.NewSnake(model.SnakeDeps{
+		apple,
+	})
 
 	view := board_view.NewView(
 		board_view.ViewDeps{
@@ -79,6 +66,7 @@ func main() {
 	tickerX := time.NewTicker(300 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
+
 			switch *lastDirection {
 			case DirectionRight:
 				snake.MoveSnakeRight()

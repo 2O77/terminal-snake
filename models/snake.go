@@ -1,15 +1,15 @@
 package model
 
-type Box struct {
-	X int
-	Y int
-}
-
 type Snake struct {
-	Body []Box
+	Apple *Apple
+	Body  []Box
 }
 
-func NewSnake() *Snake {
+type SnakeDeps struct {
+	Apple *Apple
+}
+
+func NewSnake(deps SnakeDeps) *Snake {
 	var snake *Snake = &Snake{
 		Body: []Box{
 			{0, 0},
@@ -21,62 +21,86 @@ func NewSnake() *Snake {
 		},
 	}
 
+	snake.Apple = deps.Apple
 	return snake
 }
 
 func (s *Snake) MoveSnakeRight() {
-	s.Body = s.Body[1:]
-
-	head := s.GiveMeHead()
+	head := s.Head()
 
 	newHead := Box{
 		X: head.X + 1,
 		Y: head.Y,
 	}
 
+	if !s.IsHeadOn(Box(*s.Apple)) {
+		s.Body = s.Body[1:]
+	}
+
 	s.Body = append(s.Body, newHead)
 }
 
 func (s *Snake) MoveSnakeLeft() {
-	s.Body = s.Body[1:]
-
-	head := s.GiveMeHead()
+	head := s.Head()
 
 	newHead := Box{
 		X: head.X - 1,
 		Y: head.Y,
 	}
 
+	if !s.IsHeadOn(Box(*s.Apple)) {
+		s.Body = s.Body[1:]
+	}
+
 	s.Body = append(s.Body, newHead)
 }
 
 func (s *Snake) MoveSnakeUp() {
-	s.Body = s.Body[1:]
-
-	head := s.GiveMeHead()
+	head := s.Head()
 
 	newHead := Box{
 		X: head.X,
 		Y: head.Y - 1,
 	}
 
+	if !s.IsHeadOn(Box(*s.Apple)) {
+		s.Body = s.Body[1:]
+	}
+
 	s.Body = append(s.Body, newHead)
 }
 
 func (s *Snake) MoveSnakeDown() {
-	s.Body = s.Body[1:]
-
-	head := s.GiveMeHead()
+	head := s.Head()
 
 	newHead := Box{
 		X: head.X,
 		Y: head.Y + 1,
 	}
 
+	if !s.IsHeadOn(Box(*s.Apple)) {
+		s.Body = s.Body[1:]
+	}
+
 	s.Body = append(s.Body, newHead)
 }
 
-func (s *Snake) GiveMeHead() Box {
+func (s *Snake) IsHeadOn(box Box) bool {
+	head := s.Head()
+
+	if box.X == head.X && box.Y == head.Y {
+		return true
+	}
+
+	return false
+}
+
+func (s *Snake) Head() Box {
 	head := s.Body[len(s.Body)-1]
 	return head
+}
+
+func (s *Snake) Tail() Box {
+	tail := s.Body[0]
+	return tail
 }

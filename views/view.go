@@ -64,6 +64,7 @@ func (v View) SetView() {
 	v.setBackground()
 	v.setSnake()
 	v.setApple()
+	v.snake.IsHeadOn(model.Box(*v.apple))
 	// setTopbar(screen)
 	v.screen.Show()
 }
