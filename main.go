@@ -187,48 +187,6 @@ func viewBoardCoordinates(screen tcell.Screen) (result ViewBoardCoordinates, ok 
 	return
 }
 
-func SetSnakeDirectionOnKeyEvent(screen tcell.Screen, snake *Snake, snakeDirection *LastDirection, key tcell.Key) {
-	head := snake.Body[len(snake.Body)-1]
-	neck := snake.Body[len(snake.Body)-2]
-
-	if key == tcell.KeyRight {
-		if head.Y == neck.Y {
-			if head.X < neck.X {
-				return
-			}
-		}
-
-		*snakeDirection = DirectionRight
-	}
-	if key == tcell.KeyLeft {
-		if head.Y == neck.Y {
-			if head.X > neck.X {
-				return
-			}
-		}
-
-		*snakeDirection = DirectionLeft
-	}
-	if key == tcell.KeyUp {
-		if head.X == neck.X {
-			if head.Y > neck.Y {
-				return
-			}
-		}
-
-		*snakeDirection = DirectionUp
-	}
-	if key == tcell.KeyDown {
-		if head.X == neck.X {
-			if head.Y < neck.Y {
-				return
-			}
-		}
-
-		*snakeDirection = DirectionDown
-	}
-}
-
 func main() {
 	logFile := initLogger()
 	defer logFile.Close()
@@ -276,6 +234,11 @@ func main() {
 		}
 	}()
 
+	directionDown := DirectionDown
+	directionUp := DirectionUp
+	directionLeft := DirectionLeft
+	directionRight := DirectionRight
+
 	for {
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
@@ -284,8 +247,26 @@ func main() {
 			if ev.Key() == tcell.KeyEscape {
 				screen.Fini()
 				os.Exit(0)
-			} else {
-				SetSnakeDirectionOnKeyEvent(screen, snake, lastDirection, ev.Key())
+			}
+			if ev.Key() == tcell.KeyUp {
+				if lastDirection != &directionDown {
+					lastDirection = &directionUp
+				}
+			}
+			if ev.Key() == tcell.KeyDown {
+				if lastDirection != &directionUp {
+					lastDirection = &directionDown
+				}
+			}
+			if ev.Key() == tcell.KeyLeft {
+				if lastDirection != &directionRight {
+					lastDirection = &directionLeft
+				}
+			}
+			if ev.Key() == tcell.KeyRight {
+				if lastDirection != &directionLeft {
+					lastDirection = &directionRight
+				}
 			}
 		}
 	}
