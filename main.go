@@ -258,7 +258,7 @@ func main() {
 
 	defer quit(screen)
 
-	tickerX := time.NewTicker(100 * time.Millisecond)
+	tickerX := time.NewTicker(180 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
 			switch *lastDirection {
