@@ -33,10 +33,10 @@ func (s *Snake) MoveSnakeRight() {
 		Y: head.Y,
 	}
 
-	if !s.IsHeadOn(Box(*s.Apple)) {
-		s.Body = s.Body[1:]
-	} else {
+	if s.IsHeadOn(Box(*s.Apple)) {
 		s.Apple.SummonApple()
+	} else {
+		s.Body = s.Body[1:]
 	}
 
 	s.Body = append(s.Body, newHead)
@@ -50,10 +50,10 @@ func (s *Snake) MoveSnakeLeft() {
 		Y: head.Y,
 	}
 
-	if !s.IsHeadOn(Box(*s.Apple)) {
-		s.Body = s.Body[1:]
-	} else {
+	if s.IsHeadOn(Box(*s.Apple)) {
 		s.Apple.SummonApple()
+	} else {
+		s.Body = s.Body[1:]
 	}
 
 	s.Body = append(s.Body, newHead)
@@ -67,10 +67,10 @@ func (s *Snake) MoveSnakeUp() {
 		Y: head.Y - 1,
 	}
 
-	if !s.IsHeadOn(Box(*s.Apple)) {
-		s.Body = s.Body[1:]
-	} else {
+	if s.IsHeadOn(Box(*s.Apple)) {
 		s.Apple.SummonApple()
+	} else {
+		s.Body = s.Body[1:]
 	}
 
 	s.Body = append(s.Body, newHead)
@@ -84,10 +84,10 @@ func (s *Snake) MoveSnakeDown() {
 		Y: head.Y + 1,
 	}
 
-	if !s.IsHeadOn(Box(*s.Apple)) {
-		s.Body = s.Body[1:]
-	} else {
+	if s.IsHeadOn(Box(*s.Apple)) {
 		s.Apple.SummonApple()
+	} else {
+		s.Body = s.Body[1:]
 	}
 
 	s.Body = append(s.Body, newHead)

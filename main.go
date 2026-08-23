@@ -35,7 +35,7 @@ func main() {
 	defer logFile.Close()
 
 	initialDir := DirectionRight
-	var lastDirection *LastDirection = &initialDir
+	var snakeLastDirection *LastDirection = &initialDir
 
 	screen, err := tcell.NewScreen()
 	if err != nil {
@@ -63,11 +63,10 @@ func main() {
 
 	defer quit(screen)
 
-	tickerX := time.NewTicker(300 * time.Millisecond)
+	tickerX := time.NewTicker(200 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
-
-			switch *lastDirection {
+			switch *snakeLastDirection {
 			case DirectionRight:
 				snake.MoveSnakeRight()
 			case DirectionLeft:
@@ -92,23 +91,23 @@ func main() {
 				os.Exit(0)
 			}
 			if ev.Key() == tcell.KeyUp {
-				if *lastDirection != DirectionDown {
-					*lastDirection = DirectionUp
+				if *snakeLastDirection != DirectionDown {
+					*snakeLastDirection = DirectionUp
 				}
 			}
 			if ev.Key() == tcell.KeyDown {
-				if *lastDirection != DirectionUp {
-					*lastDirection = DirectionDown
+				if *snakeLastDirection != DirectionUp {
+					*snakeLastDirection = DirectionDown
 				}
 			}
 			if ev.Key() == tcell.KeyLeft {
-				if *lastDirection != DirectionRight {
-					*lastDirection = DirectionLeft
+				if *snakeLastDirection != DirectionRight {
+					*snakeLastDirection = DirectionLeft
 				}
 			}
 			if ev.Key() == tcell.KeyRight {
-				if *lastDirection != DirectionLeft {
-					*lastDirection = DirectionRight
+				if *snakeLastDirection != DirectionLeft {
+					*snakeLastDirection = DirectionRight
 				}
 			}
 		}

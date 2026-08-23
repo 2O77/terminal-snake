@@ -62,9 +62,8 @@ func (v View) SetView() {
 	v.boardCoordinates = viewBoardCoordinates
 
 	v.setBackground()
-	v.setSnake()
 	v.setApple()
-	v.snake.IsHeadOn(model.Box(*v.apple))
+	v.setSnake()
 	// setTopbar(screen)
 	v.screen.Show()
 }
@@ -90,9 +89,6 @@ func (v View) setBackground() {
 }
 
 func (v View) setSnake() {
-	const runeValue rune = 0
-	var combining []rune = nil
-
 	snake := v.snake
 
 	snakeStyle := tcell.StyleDefault.
@@ -122,7 +118,7 @@ func (v View) setSnake() {
 	for index, value := range snakeWithViewCells.Body {
 		if index == len(snake.Body)-1 {
 			for index := range 2 {
-				v.screen.SetContent(x+value.X+index, y+value.Y, runeValue, combining, headStyle)
+				v.screen.SetContent(x+value.X+index, y+value.Y, v.rune, v.combining, headStyle)
 			}
 		} else {
 			for index := range 2 {
