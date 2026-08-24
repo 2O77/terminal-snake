@@ -1,6 +1,8 @@
 package model
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 const AppleInitialX = 15
 const AppleInitialY = 15
@@ -18,10 +20,26 @@ func NewApple() *Apple {
 	return apple
 }
 
-func (a *Apple) SummonApple() {
+func (a *Apple) SummonApple(BannedBoxes []Box) {
+	apple := a.RandomBox()
+
+	for _, box := range BannedBoxes {
+		if apple.X == box.X && apple.Y == box.Y {
+			apple = a.RandomBox()
+			break
+		}
+	}
+
+	a.X = apple.X
+	a.Y = apple.Y
+}
+
+func (a *Apple) RandomBox() *Box {
 	x := rand.Intn(BoardBoxColumns)
 	y := rand.Intn(BoardBoxRows)
 
-	a.X = x
-	a.Y = y
+	return &Box{
+		X: x,
+		Y: y,
+	}
 }
