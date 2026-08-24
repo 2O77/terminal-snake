@@ -75,33 +75,34 @@ func main() {
 	}()
 
 	for {
-
-		switch ev := screen.PollEvent().(type) {
-		case *tcell.EventResize:
-			screen.Sync()
-		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape {
-				screen.Fini()
-				os.Exit(0)
-			}
-			if ev.Key() == tcell.KeyUp {
-				if *snakeLastDirection != model.SnakeDirectionDown {
-					*snakeLastDirection = model.SnakeDirectionUp
+		if !isGameOver {
+			switch ev := screen.PollEvent().(type) {
+			case *tcell.EventResize:
+				screen.Sync()
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyEscape {
+					screen.Fini()
+					os.Exit(0)
 				}
-			}
-			if ev.Key() == tcell.KeyDown {
-				if *snakeLastDirection != model.SnakeDirectionUp {
-					*snakeLastDirection = model.SnakeDirectionDown
+				if ev.Key() == tcell.KeyUp {
+					if *snakeLastDirection != model.SnakeDirectionDown {
+						*snakeLastDirection = model.SnakeDirectionUp
+					}
 				}
-			}
-			if ev.Key() == tcell.KeyLeft {
-				if *snakeLastDirection != model.SnakeDirectionRight {
-					*snakeLastDirection = model.SnakeDirectionLeft
+				if ev.Key() == tcell.KeyDown {
+					if *snakeLastDirection != model.SnakeDirectionUp {
+						*snakeLastDirection = model.SnakeDirectionDown
+					}
 				}
-			}
-			if ev.Key() == tcell.KeyRight {
-				if *snakeLastDirection != model.SnakeDirectionLeft {
-					*snakeLastDirection = model.SnakeDirectionRight
+				if ev.Key() == tcell.KeyLeft {
+					if *snakeLastDirection != model.SnakeDirectionRight {
+						*snakeLastDirection = model.SnakeDirectionLeft
+					}
+				}
+				if ev.Key() == tcell.KeyRight {
+					if *snakeLastDirection != model.SnakeDirectionLeft {
+						*snakeLastDirection = model.SnakeDirectionRight
+					}
 				}
 			}
 		}
