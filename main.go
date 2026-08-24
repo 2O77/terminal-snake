@@ -10,15 +10,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type LastDirection string
-
-const (
-	DirectionUp    LastDirection = "UP"
-	DirectionDown  LastDirection = "DOWN"
-	DirectionLeft  LastDirection = "LEFT"
-	DirectionRight LastDirection = "RIGHT"
-)
-
 // func setTopbar(screen tcell.Screen) {
 // 	backgroundStyle := tcell.StyleDefault.
 // 		Background(tcell.ColorBlack).
@@ -34,8 +25,7 @@ func main() {
 	logFile := initLogger()
 	defer logFile.Close()
 
-	initialDir := DirectionRight
-	var snakeLastDirection *LastDirection = &initialDir
+	isGameOver := false
 
 	screen, err := tcell.NewScreen()
 	if err != nil {
@@ -48,7 +38,7 @@ func main() {
 
 	apple := model.NewApple()
 	snake := model.NewSnake(model.SnakeDeps{
-		apple,
+		&isGameOver, apple,
 	})
 
 	view := board_view.NewView(
@@ -63,17 +53,19 @@ func main() {
 
 	defer quit(screen)
 
+	snakeLastDirection := snake.LastDirection
+
 	tickerX := time.NewTicker(100 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
 			switch *snakeLastDirection {
-			case DirectionRight:
+			case model.SnakeDirectionRight:
 				snake.MoveSnakeRight()
-			case DirectionLeft:
+			case model.SnakeDirectionLeft:
 				snake.MoveSnakeLeft()
-			case DirectionUp:
+			case model.SnakeDirectionUp:
 				snake.MoveSnakeUp()
-			case DirectionDown:
+			case model.SnakeDirectionDown:
 				snake.MoveSnakeDown()
 			}
 
@@ -82,6 +74,10 @@ func main() {
 	}()
 
 	for {
+		if isGameOver {
+			quit(screen)
+		}
+
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			screen.Sync()
@@ -91,23 +87,23 @@ func main() {
 				os.Exit(0)
 			}
 			if ev.Key() == tcell.KeyUp {
-				if *snakeLastDirection != DirectionDown {
-					*snakeLastDirection = DirectionUp
+				if *snakeLastDirection != model.SnakeDirectionDown {
+					*snakeLastDirection = model.SnakeDirectionUp
 				}
 			}
 			if ev.Key() == tcell.KeyDown {
-				if *snakeLastDirection != DirectionUp {
-					*snakeLastDirection = DirectionDown
+				if *snakeLastDirection != model.SnakeDirectionUp {
+					*snakeLastDirection = model.SnakeDirectionDown
 				}
 			}
 			if ev.Key() == tcell.KeyLeft {
-				if *snakeLastDirection != DirectionRight {
-					*snakeLastDirection = DirectionLeft
+				if *snakeLastDirection != model.SnakeDirectionRight {
+					*snakeLastDirection = model.SnakeDirectionLeft
 				}
 			}
 			if ev.Key() == tcell.KeyRight {
-				if *snakeLastDirection != DirectionLeft {
-					*snakeLastDirection = DirectionRight
+				if *snakeLastDirection != model.SnakeDirectionLeft {
+					*snakeLastDirection = model.SnakeDirectionRight
 				}
 			}
 		}

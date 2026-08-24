@@ -20,11 +20,11 @@ func NewApple() *Apple {
 	return apple
 }
 
-func (a *Apple) SummonApple(BannedBoxes []Box) {
+func (a *Apple) SummonApple(bannedBoxes []Box) {
 	apple := a.RandomBox()
 
-	for _, box := range BannedBoxes {
-		if apple.X == box.X && apple.Y == box.Y {
+	for _, box := range bannedBoxes {
+		if OneToOne(*apple, box) {
 			apple = a.RandomBox()
 			break
 		}

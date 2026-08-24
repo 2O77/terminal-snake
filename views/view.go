@@ -108,10 +108,10 @@ func (v View) setSnake() {
 		snakeWithViewCells.Body[index].X = value.X * 2
 	}
 
-	head := snakeWithViewCells.Body[len(snake.Body)-1]
-	if head.X < 0 || head.X > boardWidthViewCells || head.Y < 0 || head.Y > boardHeightViewCells {
-		return
-	}
+	// head := snakeWithViewCells.Body[len(snake.Body)-1]
+	// if head.X < 0 || head.X > boardWidthViewCells || head.Y < 0 || head.Y > boardHeightViewCells {
+	// 	return
+	// }
 
 	x, y := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
 
