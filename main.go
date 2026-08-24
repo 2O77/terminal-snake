@@ -58,25 +58,23 @@ func main() {
 	tickerX := time.NewTicker(100 * time.Millisecond)
 	go func() {
 		for range tickerX.C {
-			switch *snakeLastDirection {
-			case model.SnakeDirectionRight:
-				snake.MoveSnakeRight()
-			case model.SnakeDirectionLeft:
-				snake.MoveSnakeLeft()
-			case model.SnakeDirectionUp:
-				snake.MoveSnakeUp()
-			case model.SnakeDirectionDown:
-				snake.MoveSnakeDown()
+			if !isGameOver {
+				switch *snakeLastDirection {
+				case model.SnakeDirectionRight:
+					snake.MoveSnakeRight()
+				case model.SnakeDirectionLeft:
+					snake.MoveSnakeLeft()
+				case model.SnakeDirectionUp:
+					snake.MoveSnakeUp()
+				case model.SnakeDirectionDown:
+					snake.MoveSnakeDown()
+				}
+				view.SetView()
 			}
-
-			view.SetView()
 		}
 	}()
 
 	for {
-		if isGameOver {
-			quit(screen)
-		}
 
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:

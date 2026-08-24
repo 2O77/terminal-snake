@@ -40,6 +40,7 @@ func NewSnake(deps SnakeDeps) *Snake {
 	initialDir := SnakeDirectionRight
 	snake.LastDirection = &initialDir
 	snake.Apple = deps.Apple
+	snake.IsGameOver = deps.IsGameOver
 
 	return snake
 }

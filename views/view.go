@@ -79,8 +79,8 @@ func (v View) setBackground() {
 
 	x, y := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
 
-	for viewColumn := 0; viewColumn < boardWidthViewCells; viewColumn += 2 {
-		for viewRow := 0; viewRow < boardHeightViewCells; viewRow += 1 {
+	for viewColumn := 0; viewColumn <= boardWidthViewCells; viewColumn += 2 {
+		for viewRow := 0; viewRow <= boardHeightViewCells; viewRow += 1 {
 			for index := range 2 {
 				v.screen.SetContent(x+viewColumn+index, y+viewRow, v.rune, v.combining, backgroundStyle)
 			}
