@@ -8,6 +8,7 @@ import (
 )
 
 type ViewDeps struct {
+	IsGameOver      *bool
 	Apple           *model.Apple
 	Snake           *model.Snake
 	Screen          tcell.Screen
@@ -16,6 +17,7 @@ type ViewDeps struct {
 }
 
 type View struct {
+	IsGameOver       *bool
 	apple            *model.Apple
 	snake            *model.Snake
 	screen           tcell.Screen
@@ -42,6 +44,7 @@ func NewView(deps ViewDeps) View {
 	var combining []rune = nil
 
 	return View{
+		deps.IsGameOver,
 		deps.Apple,
 		deps.Snake,
 		deps.Screen,
@@ -64,8 +67,16 @@ func (v View) SetView() {
 	v.setBackground()
 	v.setApple()
 	v.setSnake()
+
+	if *v.IsGameOver {
+		v.setGameOver()
+	}
 	// setTopbar(screen)
 	v.screen.Show()
+}
+
+func (v *View) setGameOver() {
+	v.screen.Clear()
 }
 
 func (v View) setBackground() {

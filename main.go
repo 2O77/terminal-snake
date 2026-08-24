@@ -43,6 +43,7 @@ func main() {
 
 	view := board_view.NewView(
 		board_view.ViewDeps{
+			&isGameOver,
 			apple,
 			snake,
 			screen,
@@ -69,21 +70,22 @@ func main() {
 				case model.SnakeDirectionDown:
 					snake.MoveSnakeDown()
 				}
+
 				view.SetView()
 			}
 		}
 	}()
 
 	for {
-		if !isGameOver {
-			switch ev := screen.PollEvent().(type) {
-			case *tcell.EventResize:
-				screen.Sync()
-			case *tcell.EventKey:
-				if ev.Key() == tcell.KeyEscape {
-					screen.Fini()
-					os.Exit(0)
-				}
+		switch ev := screen.PollEvent().(type) {
+		case *tcell.EventResize:
+			screen.Sync()
+		case *tcell.EventKey:
+			if ev.Key() == tcell.KeyEscape {
+				screen.Fini()
+				os.Exit(0)
+			}
+			if !isGameOver {
 				if ev.Key() == tcell.KeyUp {
 					if *snakeLastDirection != model.SnakeDirectionDown {
 						*snakeLastDirection = model.SnakeDirectionUp
