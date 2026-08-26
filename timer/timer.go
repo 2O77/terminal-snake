@@ -4,7 +4,7 @@ import "time"
 
 func NewTime(size int) time.Duration {
 	if size < 15 {
-		return 180
+		return (180)
 	}
 	if size < 25 {
 		return 160

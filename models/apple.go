@@ -4,8 +4,8 @@ import (
 	"math/rand"
 )
 
-const AppleInitialX = 15
-const AppleInitialY = 15
+const AppleInitialX = 10
+const AppleInitialY = 10
 
 type Apple Box
 

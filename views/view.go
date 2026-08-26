@@ -1,10 +1,12 @@
 package board_view
 
 import (
+	"fmt"
 	"log"
 	model "terminal-snake/models"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/mattn/go-runewidth"
 )
 
 type ViewDeps struct {
@@ -68,15 +70,35 @@ func (v View) SetView() {
 	v.setApple()
 	v.setSnake()
 
-	if *v.IsGameOver {
-		v.setGameOver()
-	}
+	v.setStatusBar()
 	// setTopbar(screen)
 	v.screen.Show()
 }
 
-func (v *View) setGameOver() {
-	v.screen.Clear()
+func (v *View) setStatusBar() {
+	viewBoardCoordinates, ok := v.viewBoardCoordinates()
+	if !ok {
+		return
+	}
+
+	textStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)
+
+	snakeLength := len(v.snake.Body)
+
+	var statusText string
+	if *v.IsGameOver {
+		statusText = fmt.Sprintf("GAME OVER - SCORE: %d", snakeLength)
+	}
+	if !*v.IsGameOver {
+		statusText = fmt.Sprintf("SCORE: %d", snakeLength)
+	}
+
+	v.emitStr(
+		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(statusText)/2),
+		viewBoardCoordinates.boardTopY+boardHeightViewCells+3,
+		textStyle,
+		statusText,
+	)
 }
 
 func (v View) setBackground() {
@@ -172,4 +194,20 @@ func (v View) viewBoardCoordinates() (result ViewBoardCoordinates, ok bool) {
 	result.boardBottomY = result.boardTopY + boardHeightViewCells - 1
 
 	return
+}
+
+func (v *View) emitStr(x, y int, style tcell.Style, str string) {
+	s := v.screen
+
+	for _, c := range str {
+		var comb []rune
+		w := runewidth.RuneWidth(c)
+		if w == 0 {
+			comb = []rune{c}
+			c = ' '
+			w = 1
+		}
+		s.SetContent(x, y, c, comb, style)
+		x += w
+	}
 }

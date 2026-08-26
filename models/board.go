@@ -1,4 +1,4 @@
 package model
 
-const BoardBoxColumns = 40
-const BoardBoxRows = 20
+const BoardBoxColumns = 20
+const BoardBoxRows = 12
