@@ -99,17 +99,8 @@ func main() {
 		}
 
 		if time.Since(timer.Now) > timer.Period {
-			switch snake.LastDirections[0] {
-			case model.SnakeDirectionRight:
-				snake.MoveSnakeRight()
-			case model.SnakeDirectionLeft:
-				snake.MoveSnakeLeft()
-			case model.SnakeDirectionUp:
-				snake.MoveSnakeUp()
-			case model.SnakeDirectionDown:
-				snake.MoveSnakeDown()
-			default:
-				switch *snake.Direction {
+			if !isGameOver {
+				switch snake.LastDirections[0] {
 				case model.SnakeDirectionRight:
 					snake.MoveSnakeRight()
 				case model.SnakeDirectionLeft:
@@ -118,6 +109,17 @@ func main() {
 					snake.MoveSnakeUp()
 				case model.SnakeDirectionDown:
 					snake.MoveSnakeDown()
+				default:
+					switch *snake.Direction {
+					case model.SnakeDirectionRight:
+						snake.MoveSnakeRight()
+					case model.SnakeDirectionLeft:
+						snake.MoveSnakeLeft()
+					case model.SnakeDirectionUp:
+						snake.MoveSnakeUp()
+					case model.SnakeDirectionDown:
+						snake.MoveSnakeDown()
+					}
 				}
 			}
 

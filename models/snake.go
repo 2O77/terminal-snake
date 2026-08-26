@@ -20,7 +20,7 @@ type SnakeDeps struct {
 type SnakeDirection string
 
 type PermanentSnakeDirection SnakeDirection
-type LastDirections [4]SnakeDirection
+type LastDirections [10]SnakeDirection
 
 const (
 	SnakeDirectionUp    SnakeDirection = "UP"
@@ -44,9 +44,7 @@ func NewSnake(deps SnakeDeps) *Snake {
 	}
 
 	initialDir := SnakeDirectionRight
-	snake.LastDirections = &LastDirections{
-		"", "", "", "",
-	}
+	snake.LastDirections = &LastDirections{}
 
 	snake.apple = deps.Apple
 	snake.IsGameOver = deps.IsGameOver

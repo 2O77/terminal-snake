@@ -25,8 +25,10 @@ func (a *Apple) SummonApple(bannedBoxes []Box) {
 
 	for _, box := range bannedBoxes {
 		if OneToOne(*apple, box) {
-			apple = a.RandomBox()
-			break
+
+			// it is recursive, be careful
+			a.SummonApple(bannedBoxes)
+			return
 		}
 	}
 
