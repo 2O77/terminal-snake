@@ -143,6 +143,21 @@ func (s *Snake) DequeueDirections() {
 	snake.LastDirections[len(snake.LastDirections)-1] = ""
 }
 
+func (s *Snake) DirectionCount() int {
+	moves := 0
+
+	for _, value := range s.LastDirections {
+		if value != "" {
+			moves++
+		}
+	}
+	if moves == 0 {
+		moves = 1
+	}
+
+	return moves
+}
+
 func (s *Snake) isHeadOn(box Box) bool {
 	head := s.head()
 

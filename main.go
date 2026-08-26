@@ -57,6 +57,7 @@ func main() {
 
 	timer := timer.NewTimer(timer.TimerDeps{snake})
 	timer.SetTimer()
+	timer.SetPeriod()
 
 	for {
 		if screen.HasPendingEvent() {
@@ -94,7 +95,7 @@ func main() {
 				}
 			}
 
-			timer.SetMoves()
+			timer.SetPeriod()
 		}
 
 		if time.Since(timer.Now) > timer.Period {
@@ -120,8 +121,9 @@ func main() {
 				}
 			}
 
-			timer.SetTimer()
 			snake.DequeueDirections()
+			timer.SetTimer()
+			timer.SetPeriod()
 
 		}
 
