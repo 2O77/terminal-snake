@@ -1,9 +1,11 @@
 package model
 
-import "log"
+import (
+	"log"
+)
 
 type Snake struct {
-	Apple          *Apple
+	apple          *Apple
 	Body           []Box
 	LastDirections *LastDirections
 	Direction      *SnakeDirection
@@ -46,7 +48,7 @@ func NewSnake(deps SnakeDeps) *Snake {
 		"", "", "", "",
 	}
 
-	snake.Apple = deps.Apple
+	snake.apple = deps.Apple
 	snake.IsGameOver = deps.IsGameOver
 	snake.Direction = &initialDir
 	return snake
@@ -101,8 +103,8 @@ func (s *Snake) MoveSnakeDown() {
 }
 
 func (s *Snake) move(newHead Box) {
-	if s.isHeadOn(Box(*s.Apple)) {
-		s.Apple.SummonApple(s.Body)
+	if s.isHeadOn(Box(*s.apple)) {
+		s.apple.SummonApple(s.Body)
 	} else {
 		s.Body = s.Body[1:]
 	}
@@ -118,6 +120,27 @@ func (s *Snake) move(newHead Box) {
 	}
 
 	s.Body = append(s.Body, newHead)
+}
+
+func (s *Snake) EnqueueDirections(lastMove SnakeDirection) {
+	directions := s.LastDirections
+
+	for index, value := range directions {
+		if value == "" {
+			directions[index] = lastMove
+			break
+		}
+	}
+}
+
+func (s *Snake) DequeueDirections() {
+	snake := s
+
+	for index := 0; index < len(snake.LastDirections)-1; index++ {
+		snake.LastDirections[index] = snake.LastDirections[index+1]
+	}
+
+	snake.LastDirections[len(snake.LastDirections)-1] = ""
 }
 
 func (s *Snake) isHeadOn(box Box) bool {

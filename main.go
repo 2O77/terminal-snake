@@ -55,21 +55,8 @@ func main() {
 
 	defer quit(screen)
 
-	var moves int
-	moves = 0
-	for _, value := range snake.LastDirections {
-		if value != "" {
-			moves++
-		}
-	}
-	if moves == 0 {
-		moves = 1
-	}
-
-	lapTime := timer.NewTime(len(snake.Body))
-	period := lapTime / time.Duration(moves) * time.Millisecond
-
-	now := time.Now()
+	timer := timer.NewTimer(timer.TimerDeps{snake})
+	timer.SetTimer()
 
 	for {
 		if screen.HasPendingEvent() {
@@ -85,40 +72,32 @@ func main() {
 				if !isGameOver {
 					if ev.Key() == tcell.KeyUp {
 						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
-							setDirection(model.SnakeDirectionUp, snake.LastDirections)
+							snake.EnqueueDirections(model.SnakeDirectionUp)
 
 						}
 					}
 					if ev.Key() == tcell.KeyDown {
 						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
-							setDirection(model.SnakeDirectionDown, snake.LastDirections)
-
+							snake.EnqueueDirections(model.SnakeDirectionDown)
 						}
 					}
 					if ev.Key() == tcell.KeyRight {
 						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
-							setDirection(model.SnakeDirectionRight, snake.LastDirections)
+							snake.EnqueueDirections(model.SnakeDirectionRight)
 						}
 					}
 					if ev.Key() == tcell.KeyLeft {
 						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
-							setDirection(model.SnakeDirectionLeft, snake.LastDirections)
+							snake.EnqueueDirections(model.SnakeDirectionLeft)
 						}
 					}
 				}
 			}
-			moves = 0
-			for _, value := range snake.LastDirections {
-				if value != "" {
-					moves++
-				}
-			}
-			if moves == 0 {
-				moves = 1
-			}
+
+			timer.SetMoves()
 		}
 
-		if time.Since(now) > period {
+		if time.Since(timer.Now) > timer.Period {
 			switch snake.LastDirections[0] {
 			case model.SnakeDirectionRight:
 				snake.MoveSnakeRight()
@@ -141,13 +120,11 @@ func main() {
 				}
 			}
 
-			cleanDirectionQueue(*snake)
-
-			period = lapTime / time.Duration(moves) * time.Millisecond
-			lapTime = timer.NewTime(len(snake.Body))
-			now = time.Now()
+			timer.SetTimer()
+			snake.DequeueDirections()
 
 		}
+
 		view.SetView()
 	}
 }
@@ -168,21 +145,4 @@ func initLogger() *os.File {
 
 	log.SetOutput(file)
 	return file
-}
-
-func setDirection(lastMove model.SnakeDirection, directions *model.LastDirections) {
-	for index, value := range directions {
-		if value == "" {
-			directions[index] = lastMove
-			break
-		}
-	}
-}
-
-func cleanDirectionQueue(snake model.Snake) {
-	for index := 0; index < len(snake.LastDirections)-1; index++ {
-		snake.LastDirections[index] = snake.LastDirections[index+1]
-	}
-
-	snake.LastDirections[len(snake.LastDirections)-1] = ""
 }
