@@ -55,51 +55,6 @@ func main() {
 
 	defer quit(screen)
 
-	permanentLastDirection := snake.PermanentSnakeDirection
-
-	// go func() {
-	// 	var moves time.Duration
-	// 	moves = 0
-	// 	for _, value := range snake.LastDirections {
-	// 		if value != "" {
-	// 			moves++
-	// 		}
-	// 	}
-	// 	if moves == 0 {
-	// 		moves = 1
-	// 	}
-
-	// 	ticker := timer.NewTime(len(snake.Body))
-	// 	period := ticker / moves * time.Millisecond
-
-	// 	timer := time.NewTicker(period)
-
-	// 	for range timer.C {
-	// 		if !isGameOver {
-	// 			switch *permanentLastDirection {
-	// 			case model.SnakeDirectionRight:
-	// 				snake.MoveSnakeRight()
-	// 			case model.SnakeDirectionLeft:
-	// 				snake.MoveSnakeLeft()
-	// 			case model.SnakeDirectionUp:
-	// 				snake.MoveSnakeUp()
-	// 			case model.SnakeDirectionDown:
-	// 				snake.MoveSnakeDown()
-	// 			default:
-	// 				log.Fatal("permanent last directioin cannot be empty")
-	// 			}
-
-	// 			cleanDirectionQueue(*snake)
-
-	// 			period = ticker / moves * time.Millisecond
-
-	// 			timer.Reset(period)
-
-	// 			view.SetView()
-	// 		}
-	// 	}
-	// }()
-
 	var moves int
 	moves = 0
 	for _, value := range snake.LastDirections {
@@ -126,34 +81,45 @@ func main() {
 					screen.Fini()
 					os.Exit(0)
 				}
+
 				if !isGameOver {
 					if ev.Key() == tcell.KeyUp {
-						if *permanentLastDirection != model.SnakeDirectionDown && *permanentLastDirection != model.SnakeDirectionUp {
-							setDirection(model.SnakeDirectionUp, snake.LastDirections, (*model.PermanentSnakeDirection)(permanentLastDirection))
+						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
+							setDirection(model.SnakeDirectionUp, snake.LastDirections)
+
 						}
 					}
 					if ev.Key() == tcell.KeyDown {
-						if *permanentLastDirection != model.SnakeDirectionDown && *permanentLastDirection != model.SnakeDirectionUp {
-							setDirection(model.SnakeDirectionDown, snake.LastDirections, (*model.PermanentSnakeDirection)(permanentLastDirection))
+						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
+							setDirection(model.SnakeDirectionDown, snake.LastDirections)
+
 						}
 					}
 					if ev.Key() == tcell.KeyRight {
-						if *permanentLastDirection != model.SnakeDirectionLeft && *permanentLastDirection != model.SnakeDirectionRight {
-							setDirection(model.SnakeDirectionRight, snake.LastDirections, (*model.PermanentSnakeDirection)(permanentLastDirection))
+						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
+							setDirection(model.SnakeDirectionRight, snake.LastDirections)
 						}
 					}
 					if ev.Key() == tcell.KeyLeft {
-						if *permanentLastDirection != model.SnakeDirectionLeft && *permanentLastDirection != model.SnakeDirectionRight {
-							setDirection(model.SnakeDirectionLeft, snake.LastDirections, (*model.PermanentSnakeDirection)(permanentLastDirection))
+						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
+							setDirection(model.SnakeDirectionLeft, snake.LastDirections)
 						}
 					}
 				}
 			}
-
+			moves = 0
+			for _, value := range snake.LastDirections {
+				if value != "" {
+					moves++
+				}
+			}
+			if moves == 0 {
+				moves = 1
+			}
 		}
 
 		if time.Since(now) > period {
-			switch *permanentLastDirection {
+			switch snake.LastDirections[0] {
 			case model.SnakeDirectionRight:
 				snake.MoveSnakeRight()
 			case model.SnakeDirectionLeft:
@@ -163,7 +129,16 @@ func main() {
 			case model.SnakeDirectionDown:
 				snake.MoveSnakeDown()
 			default:
-				log.Fatal("permanent last directioin cannot be empty")
+				switch *snake.Direction {
+				case model.SnakeDirectionRight:
+					snake.MoveSnakeRight()
+				case model.SnakeDirectionLeft:
+					snake.MoveSnakeLeft()
+				case model.SnakeDirectionUp:
+					snake.MoveSnakeUp()
+				case model.SnakeDirectionDown:
+					snake.MoveSnakeDown()
+				}
 			}
 
 			cleanDirectionQueue(*snake)
@@ -171,17 +146,6 @@ func main() {
 			period = lapTime / time.Duration(moves) * time.Millisecond
 			lapTime = timer.NewTime(len(snake.Body))
 			now = time.Now()
-
-			for _, value := range snake.LastDirections {
-				if value != "" {
-					moves++
-				}
-			}
-			if moves == 0 {
-				moves = 1
-			}
-
-			log.Print(moves)
 
 		}
 		view.SetView()
@@ -206,18 +170,12 @@ func initLogger() *os.File {
 	return file
 }
 
-func setDirection(lastMove model.SnakeDirection, directions *model.LastDirections, permanentDirection *model.PermanentSnakeDirection) {
-	isEmpty := false
+func setDirection(lastMove model.SnakeDirection, directions *model.LastDirections) {
 	for index, value := range directions {
 		if value == "" {
 			directions[index] = lastMove
-			isEmpty = true
 			break
 		}
-	}
-
-	if isEmpty {
-		*permanentDirection = model.PermanentSnakeDirection(lastMove)
 	}
 }
 

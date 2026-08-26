@@ -3,11 +3,11 @@ package model
 import "log"
 
 type Snake struct {
-	Apple                   *Apple
-	Body                    []Box
-	LastDirections          *LastDirections
-	PermanentSnakeDirection *SnakeDirection
-	IsGameOver              *bool
+	Apple          *Apple
+	Body           []Box
+	LastDirections *LastDirections
+	Direction      *SnakeDirection
+	IsGameOver     *bool
 }
 
 type SnakeDeps struct {
@@ -48,8 +48,7 @@ func NewSnake(deps SnakeDeps) *Snake {
 
 	snake.Apple = deps.Apple
 	snake.IsGameOver = deps.IsGameOver
-	snake.PermanentSnakeDirection = &initialDir
-
+	snake.Direction = &initialDir
 	return snake
 }
 
@@ -61,6 +60,7 @@ func (s *Snake) MoveSnakeRight() {
 		Y: head.Y,
 	}
 
+	*s.Direction = SnakeDirectionRight
 	s.move(newHead)
 }
 
@@ -72,6 +72,7 @@ func (s *Snake) MoveSnakeLeft() {
 		Y: head.Y,
 	}
 
+	*s.Direction = SnakeDirectionLeft
 	s.move(newHead)
 }
 
@@ -83,6 +84,7 @@ func (s *Snake) MoveSnakeUp() {
 		Y: head.Y - 1,
 	}
 
+	*s.Direction = SnakeDirectionUp
 	s.move(newHead)
 }
 
@@ -94,6 +96,7 @@ func (s *Snake) MoveSnakeDown() {
 		Y: head.Y + 1,
 	}
 
+	*s.Direction = SnakeDirectionDown
 	s.move(newHead)
 }
 
