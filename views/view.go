@@ -86,8 +86,10 @@ func (v *View) setStatusBar() {
 	snakeLength := len(v.snake.Body)
 
 	var statusText string
+	var restartText string
 	if *v.IsGameOver {
 		statusText = fmt.Sprintf("GAME OVER - SCORE: %d", snakeLength)
+		restartText = "Press 'r' to restart, esc to exit"
 	}
 	if !*v.IsGameOver {
 		statusText = fmt.Sprintf("SCORE: %d", snakeLength)
@@ -98,6 +100,12 @@ func (v *View) setStatusBar() {
 		viewBoardCoordinates.boardTopY+boardHeightViewCells+3,
 		textStyle,
 		statusText,
+	)
+	v.emitStr(
+		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(restartText)/2),
+		viewBoardCoordinates.boardTopY+boardHeightViewCells+5,
+		textStyle,
+		restartText,
 	)
 }
 

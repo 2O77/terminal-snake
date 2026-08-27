@@ -69,7 +69,9 @@ func main() {
 					screen.Fini()
 					os.Exit(0)
 				}
-
+				if ev.Key() == tcell.KeyRune && ev.Rune() == 'r' {
+					reset(screen, apple, snake, timer, &isGameOver)
+				}
 				if !isGameOver {
 					if ev.Key() == tcell.KeyUp {
 						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
@@ -139,6 +141,14 @@ func quit(s tcell.Screen) {
 	if maybePanic != nil {
 		panic(maybePanic)
 	}
+}
+
+func reset(s tcell.Screen, apple *model.Apple, snake *model.Snake, timer timer.Timer, isGameOver *bool) {
+	snake.Reset()
+	apple.Reset()
+	timer.Reset(*snake)
+	*isGameOver = false
+
 }
 
 func initLogger() *os.File {

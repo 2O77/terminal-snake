@@ -48,21 +48,27 @@ func (t *Timer) newPeriod(size int) time.Duration {
 	if size < 15 {
 		return (180)
 	}
-	if size < 25 {
+	if size < 35 {
 		return 160
 	}
-	if size < 35 {
+	if size < 55 {
 		return 140
 	}
-	if size < 45 {
+	if size < 75 {
 		return 130
 	}
-	if size < 55 {
-		return 110
+	if size < 95 {
+		return 120
 	}
-	if size < 65 {
-		return 100
+	if size < 115 {
+		return 110
 	}
 
 	return 180
+}
+
+func (t *Timer) Reset(snake model.Snake) {
+	lapTime := t.newPeriod(len(snake.Body))
+	t.Period = lapTime * time.Millisecond
+	t.Now = time.Now()
 }

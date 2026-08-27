@@ -1,15 +1,11 @@
 package model
 
-import (
-	"log"
-)
-
 type Snake struct {
 	apple          *Apple
 	Body           []Box
 	LastDirections *LastDirections
 	Direction      *SnakeDirection
-	IsGameOver     *bool
+	isGameOver     *bool
 }
 
 type SnakeDeps struct {
@@ -47,7 +43,7 @@ func NewSnake(deps SnakeDeps) *Snake {
 	snake.LastDirections = &LastDirections{}
 
 	snake.apple = deps.Apple
-	snake.IsGameOver = deps.IsGameOver
+	snake.isGameOver = deps.IsGameOver
 	snake.Direction = &initialDir
 	return snake
 }
@@ -108,13 +104,11 @@ func (s *Snake) move(newHead Box) {
 	}
 
 	if OneToMany(newHead, s.Body) {
-		log.Print("Game Over")
-		*s.IsGameOver = true
+		*s.isGameOver = true
 	}
 
 	if IsOutside(newHead, BoardBoxColumns, BoardBoxRows) {
-		log.Print("Game Over")
-		*s.IsGameOver = true
+		*s.isGameOver = true
 	}
 
 	s.Body = append(s.Body, newHead)
@@ -174,4 +168,21 @@ func (s *Snake) head() Box {
 func (s *Snake) tail() Box {
 	tail := s.Body[0]
 	return tail
+}
+
+func (s *Snake) Reset() {
+	s.Body = nil
+
+	for index := range InitialSnakeSize {
+		value := Box{
+			X: index,
+			Y: 0,
+		}
+
+		s.Body = append(s.Body, value)
+	}
+
+	initialDir := SnakeDirectionRight
+	s.Direction = &initialDir
+	s.LastDirections = &LastDirections{}
 }
