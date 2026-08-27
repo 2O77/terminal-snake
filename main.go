@@ -70,7 +70,7 @@ func main() {
 					os.Exit(0)
 				}
 				if ev.Key() == tcell.KeyRune && ev.Rune() == 'r' {
-					reset(screen, apple, snake, timer, &isGameOver)
+					reset(apple, snake, timer, &isGameOver)
 				}
 				if !isGameOver {
 					if ev.Key() == tcell.KeyUp {
@@ -143,7 +143,7 @@ func quit(s tcell.Screen) {
 	}
 }
 
-func reset(s tcell.Screen, apple *model.Apple, snake *model.Snake, timer timer.Timer, isGameOver *bool) {
+func reset(apple *model.Apple, snake *model.Snake, timer timer.Timer, isGameOver *bool) {
 	snake.Reset()
 	apple.Reset()
 	timer.Reset(*snake)
