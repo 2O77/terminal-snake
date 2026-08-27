@@ -97,13 +97,13 @@ func (v *View) setStatusBar() {
 
 	v.emitStr(
 		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(statusText)/2),
-		viewBoardCoordinates.boardTopY+boardHeightViewCells+3,
+		viewBoardCoordinates.boardTopY-2,
 		textStyle,
 		statusText,
 	)
 	v.emitStr(
 		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(restartText)/2),
-		viewBoardCoordinates.boardTopY+boardHeightViewCells+5,
+		viewBoardCoordinates.boardTopY+boardHeightViewCells+2,
 		textStyle,
 		restartText,
 	)
