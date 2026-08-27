@@ -110,13 +110,13 @@ func (v *View) setStatusBar() {
 }
 
 func (v View) setBackground() {
-	unoccupiedCellStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
+	// unoccupiedCellStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
 
 	backgroundStyle := tcell.StyleDefault.
 		Background(tcell.ColorDarkGreen).
 		Foreground(tcell.ColorWhite)
 
-	v.screen.SetStyle(unoccupiedCellStyle)
+	// v.screen.SetStyle(unoccupiedCellStyle)
 
 	x, y := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
 
