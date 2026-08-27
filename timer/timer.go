@@ -43,25 +43,33 @@ func (t *Timer) SetTimer() {
 	t.Now = time.Now()
 }
 
-// Make it newPeriod
 func (t *Timer) newPeriod(size int) time.Duration {
-	if size < 15 {
-		return (180)
+	if size < 20 {
+		return 220
 	}
-	if size < 35 {
+	if size < 40 {
+		return 220
+	}
+	if size < 60 {
+		return 200
+	}
+	if size < 80 {
+		return 180
+	}
+	if size < 100 {
 		return 160
 	}
-	if size < 55 {
-		return 140
+	if size < 120 {
+		return 150
 	}
-	if size < 75 {
+	if size < 140 {
 		return 130
 	}
-	if size < 95 {
-		return 120
-	}
-	if size < 115 {
+	if size < 160 {
 		return 110
+	}
+	if size < 180 {
+		return 90
 	}
 
 	return 180
