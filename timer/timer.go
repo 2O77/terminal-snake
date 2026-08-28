@@ -21,13 +21,10 @@ func NewTimer(deps TimerDeps) Timer {
 	}
 }
 
-// SetPeriod derives the time per move from the snake's queued directions and
-// length. More queued moves means a shorter period (faster movement).
+// SetPeriod derives the time per move from the snake's length only.
+// Speed is score-based and independent of input frequency.
 func (t *Timer) SetPeriod() {
-	moves := t.snake.DirectionCount()
-	lapTime := t.newPeriod(len(t.snake.Body))
-
-	t.Period = lapTime / time.Duration(moves)
+	t.Period = t.newPeriod(len(t.snake.Body))
 }
 
 func (t *Timer) SetTimer() {
@@ -36,24 +33,20 @@ func (t *Timer) SetTimer() {
 
 func (t *Timer) newPeriod(size int) time.Duration {
 	switch {
-	case size < 40:
+	case size < 10:
+		return 260 * time.Millisecond
+	case size < 20:
+		return 240 * time.Millisecond
+	case size < 30:
 		return 220 * time.Millisecond
-	case size < 60:
+	case size < 40:
 		return 200 * time.Millisecond
-	case size < 80:
+	case size < 50:
+		return 190 * time.Millisecond
+	case size < 60:
 		return 180 * time.Millisecond
-	case size < 100:
-		return 160 * time.Millisecond
-	case size < 120:
-		return 150 * time.Millisecond
-	case size < 140:
-		return 130 * time.Millisecond
-	case size < 160:
-		return 110 * time.Millisecond
-	case size < 180:
-		return 90 * time.Millisecond
 	default:
-		return 180 * time.Millisecond
+		return 170 * time.Millisecond
 	}
 }
 

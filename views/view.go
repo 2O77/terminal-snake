@@ -19,6 +19,8 @@ type ViewDeps struct {
 
 type View struct {
 	bestScore        int
+	paused           bool
+	countdown        int
 	apple            *model.Apple
 	snake            *model.Snake
 	screen           tcell.Screen
@@ -48,6 +50,14 @@ func (v *View) SetBestScore(score int) {
 	v.bestScore = score
 }
 
+func (v *View) SetPaused(paused bool) {
+	v.paused = paused
+}
+
+func (v *View) SetCountdown(countdown int) {
+	v.countdown = countdown
+}
+
 func (v *View) SetView() {
 	v.screen.Clear()
 
@@ -72,14 +82,31 @@ func (v *View) setStatusBar() {
 
 	boardCenterX := v.boardCoordinates.boardLeftX + (boardWidthViewCells / 2)
 
-	statusText := fmt.Sprintf("SCORE: %d", len(v.snake.Body))
-	if v.snake.IsGameOver() {
-		statusText = fmt.Sprintf("SCORE: %d - BEST SCORE: %d - GAME OVER", len(v.snake.Body), v.bestScore)
-		restartText := "Press 'r' to restart, esc to exit"
-		v.emitStr(boardCenterX-(len(restartText)/2), v.boardCoordinates.boardTopY+boardHeightViewCells+2, textStyle, restartText)
+	scoreText := fmt.Sprintf("SCORE: %d", len(v.snake.Body)-model.InitialSnakeSize)
+
+	statusText := scoreText
+	bottomText := "Press space to pause"
+
+	switch {
+	case v.countdown > 0:
+		statusText = scoreText + " - PAUSED"
+		bottomText = "Press space to cancel, esc to exit"
+	case v.paused:
+		statusText = scoreText + " - PAUSED"
+		bottomText = "Press space to resume, esc to exit"
+	case v.snake.IsGameOver():
+		statusText = fmt.Sprintf("SCORE: %d - BEST SCORE: %d - GAME OVER", len(v.snake.Body)-model.InitialSnakeSize, v.bestScore)
+		bottomText = "Press 'r' to restart, esc to exit"
 	}
 
 	v.emitStr(boardCenterX-(len(statusText)/2), v.boardCoordinates.boardTopY-2, textStyle, statusText)
+	v.emitStr(boardCenterX-(len(bottomText)/2), v.boardCoordinates.boardTopY+boardHeightViewCells+2, textStyle, bottomText)
+
+	if v.countdown > 0 {
+		countdownText := fmt.Sprintf("%d", v.countdown)
+		countdownStyle := tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite)
+		v.emitStr(boardCenterX-(len(countdownText)/2), v.boardCoordinates.boardTopY+boardHeightViewCells/2, countdownStyle, countdownText)
+	}
 }
 
 func (v *View) setBackground() {

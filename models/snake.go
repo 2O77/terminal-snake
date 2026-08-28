@@ -14,7 +14,7 @@ type SnakeDeps struct {
 
 type SnakeDirection string
 
-type LastDirections [10]SnakeDirection
+type LastDirections [3]SnakeDirection
 
 const (
 	SnakeDirectionUp    SnakeDirection = "UP"
@@ -23,7 +23,7 @@ const (
 	SnakeDirectionRight SnakeDirection = "RIGHT"
 )
 
-const InitialSnakeSize = 10
+const InitialSnakeSize = 3
 
 func NewSnake(deps SnakeDeps) *Snake {
 	snake := &Snake{}
@@ -135,21 +135,6 @@ func (s *Snake) DequeueDirections() {
 	}
 
 	snake.LastDirections[len(snake.LastDirections)-1] = ""
-}
-
-func (s *Snake) DirectionCount() int {
-	moves := 0
-
-	for _, value := range s.LastDirections {
-		if value != "" {
-			moves++
-		}
-	}
-	if moves == 0 {
-		moves = 1
-	}
-
-	return moves
 }
 
 func (s *Snake) isOpposite(direction SnakeDirection) bool {

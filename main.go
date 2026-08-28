@@ -48,6 +48,9 @@ func main() {
 	gameTimer.SetPeriod()
 
 	savedBestScore := false
+	paused := false
+	countdown := 0
+	countdownDeadline := time.Time{}
 
 	defer quit(screen)
 
@@ -67,12 +70,38 @@ func main() {
 					screen.Fini()
 					os.Exit(0)
 				}
-				if ev.Key() == tcell.KeyRune && ev.Rune() == 'r' {
-					reset(apple, snake, &gameTimer)
-					savedBestScore = false
-					needsRedraw = true
+				if ev.Key() == tcell.KeyRune {
+					switch ev.Rune() {
+					case 'r':
+						reset(apple, snake, &gameTimer)
+						savedBestScore = false
+						paused = false
+						countdown = 0
+						view.SetPaused(false)
+						view.SetCountdown(0)
+						needsRedraw = true
+					case ' ', 'p':
+						if !snake.IsGameOver() {
+							if countdown > 0 {
+								// cancel countdown, stay paused
+								countdown = 0
+								view.SetCountdown(0)
+								needsRedraw = true
+							} else if paused {
+								// start countdown to resume
+								countdown = 3
+								countdownDeadline = time.Now().Add(time.Second)
+								view.SetCountdown(countdown)
+								needsRedraw = true
+							} else {
+								paused = true
+								view.SetPaused(true)
+								needsRedraw = true
+							}
+						}
+					}
 				}
-				if !snake.IsGameOver() {
+				if !snake.IsGameOver() && !paused {
 					switch ev.Key() {
 					case tcell.KeyUp:
 						snake.EnqueueDirections(model.SnakeDirectionUp)
@@ -89,7 +118,22 @@ func main() {
 			gameTimer.SetPeriod()
 		}
 
-		if time.Since(gameTimer.Now) > gameTimer.Period {
+		if countdown > 0 && time.Now().After(countdownDeadline) {
+			countdown--
+			view.SetCountdown(countdown)
+			needsRedraw = true
+
+			if countdown == 0 {
+				// resume the game
+				paused = false
+				view.SetPaused(false)
+				gameTimer.SetTimer()
+			} else {
+				countdownDeadline = time.Now().Add(time.Second)
+			}
+		}
+
+		if !paused && time.Since(gameTimer.Now) > gameTimer.Period {
 			if !snake.IsGameOver() {
 				direction := snake.LastDirections[0]
 				if direction == "" {
@@ -117,7 +161,7 @@ func main() {
 
 		if snake.IsGameOver() && !savedBestScore {
 			savedBestScore = true
-			if score := len(snake.Body); score > bestScore {
+			if score := len(snake.Body) - model.InitialSnakeSize; score > bestScore {
 				bestScore = score
 				view.SetBestScore(bestScore)
 				cfg.BestScore = bestScore
