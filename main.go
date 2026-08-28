@@ -51,11 +51,17 @@ func main() {
 
 	defer quit(screen)
 
+	// draw the initial frame
+	view.SetView()
+
 	for {
+		needsRedraw := false
+
 		if screen.HasPendingEvent() {
 			switch ev := screen.PollEvent().(type) {
 			case *tcell.EventResize:
 				screen.Sync()
+				needsRedraw = true
 			case *tcell.EventKey:
 				if ev.Key() == tcell.KeyEscape {
 					screen.Fini()
@@ -64,6 +70,7 @@ func main() {
 				if ev.Key() == tcell.KeyRune && ev.Rune() == 'r' {
 					reset(apple, snake, &gameTimer)
 					savedBestScore = false
+					needsRedraw = true
 				}
 				if !snake.IsGameOver() {
 					switch ev.Key() {
@@ -99,6 +106,8 @@ func main() {
 				case model.SnakeDirectionDown:
 					snake.MoveSnakeDown()
 				}
+
+				needsRedraw = true
 			}
 
 			snake.DequeueDirections()
@@ -115,11 +124,16 @@ func main() {
 				if err := cfg.Save(); err != nil {
 					log.Print("couldn't save best score: ", err)
 				}
+
+				needsRedraw = true
 			}
 		}
 
-		view.SetView()
-		time.Sleep(5 * time.Millisecond)
+		if needsRedraw {
+			view.SetView()
+		}
+
+		time.Sleep(1 * time.Millisecond)
 	}
 }
 
