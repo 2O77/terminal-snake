@@ -1,17 +1,12 @@
 package model
 
-func OneToOne(Box1 Box, Box2 Box) bool {
-	if Box1.X == Box2.X && Box1.Y == Box2.Y {
-		return true
-	}
-
-	return false
+func OneToOne(first Box, second Box) bool {
+	return first.X == second.X && first.Y == second.Y
 }
 
-func OneToMany(Box1 Box, Boxes []Box) bool {
-	for _, elem := range Boxes {
-		isCollide := OneToOne(Box1, elem)
-		if isCollide {
+func OneToMany(target Box, boxes []Box) bool {
+	for _, box := range boxes {
+		if OneToOne(target, box) {
 			return true
 		}
 	}
@@ -19,14 +14,8 @@ func OneToMany(Box1 Box, Boxes []Box) bool {
 	return false
 }
 
-func IsOutside(Box Box, x int, y int) bool {
-	if Box.X < 0 || Box.X > x {
-		return true
-	}
-
-	if Box.Y < 0 || Box.Y > y {
-		return true
-	}
-
-	return false
+// IsOutside reports whether box is outside a board of columns x rows.
+// Valid coordinates are 0 <= X < columns and 0 <= Y < rows.
+func IsOutside(box Box, columns int, rows int) bool {
+	return box.X < 0 || box.X >= columns || box.Y < 0 || box.Y >= rows
 }

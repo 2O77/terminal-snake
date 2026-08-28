@@ -21,22 +21,13 @@ func NewTimer(deps TimerDeps) Timer {
 	}
 }
 
+// SetPeriod derives the time per move from the snake's queued directions and
+// length. More queued moves means a shorter period (faster movement).
 func (t *Timer) SetPeriod() {
 	moves := t.snake.DirectionCount()
-	snake := t.snake
+	lapTime := t.newPeriod(len(t.snake.Body))
 
-	for _, value := range snake.LastDirections {
-		if value != "" {
-			moves++
-		}
-	}
-	if moves == 0 {
-		moves = 1
-	}
-
-	lapTime := t.newPeriod(len(snake.Body))
-
-	t.Period = lapTime / time.Duration(moves) * time.Millisecond
+	t.Period = lapTime / time.Duration(moves)
 }
 
 func (t *Timer) SetTimer() {
@@ -44,39 +35,29 @@ func (t *Timer) SetTimer() {
 }
 
 func (t *Timer) newPeriod(size int) time.Duration {
-	if size < 20 {
-		return 220
+	switch {
+	case size < 40:
+		return 220 * time.Millisecond
+	case size < 60:
+		return 200 * time.Millisecond
+	case size < 80:
+		return 180 * time.Millisecond
+	case size < 100:
+		return 160 * time.Millisecond
+	case size < 120:
+		return 150 * time.Millisecond
+	case size < 140:
+		return 130 * time.Millisecond
+	case size < 160:
+		return 110 * time.Millisecond
+	case size < 180:
+		return 90 * time.Millisecond
+	default:
+		return 180 * time.Millisecond
 	}
-	if size < 40 {
-		return 220
-	}
-	if size < 60 {
-		return 200
-	}
-	if size < 80 {
-		return 180
-	}
-	if size < 100 {
-		return 160
-	}
-	if size < 120 {
-		return 150
-	}
-	if size < 140 {
-		return 130
-	}
-	if size < 160 {
-		return 110
-	}
-	if size < 180 {
-		return 90
-	}
-
-	return 180
 }
 
-func (t *Timer) Reset(snake model.Snake) {
-	lapTime := t.newPeriod(len(snake.Body))
-	t.Period = lapTime * time.Millisecond
+func (t *Timer) Reset(snake *model.Snake) {
+	t.Period = t.newPeriod(len(snake.Body))
 	t.Now = time.Now()
 }

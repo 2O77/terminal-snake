@@ -5,17 +5,15 @@ type Snake struct {
 	Body           []Box
 	LastDirections *LastDirections
 	Direction      *SnakeDirection
-	isGameOver     *bool
+	gameOver       bool
 }
 
 type SnakeDeps struct {
-	IsGameOver *bool
-	Apple      *Apple
+	Apple *Apple
 }
 
 type SnakeDirection string
 
-type PermanentSnakeDirection SnakeDirection
 type LastDirections [10]SnakeDirection
 
 const (
@@ -41,11 +39,13 @@ func NewSnake(deps SnakeDeps) *Snake {
 
 	initialDir := SnakeDirectionRight
 	snake.LastDirections = &LastDirections{}
-
 	snake.apple = deps.Apple
-	snake.isGameOver = deps.IsGameOver
 	snake.Direction = &initialDir
 	return snake
+}
+
+func (s *Snake) IsGameOver() bool {
+	return s.gameOver
 }
 
 func (s *Snake) MoveSnakeRight() {
@@ -103,24 +103,26 @@ func (s *Snake) move(newHead Box) {
 		s.Body = s.Body[1:]
 	}
 
-	if OneToMany(newHead, s.Body) {
-		*s.isGameOver = true
-	}
-
-	if IsOutside(newHead, BoardBoxColumns, BoardBoxRows) {
-		*s.isGameOver = true
+	if OneToMany(newHead, s.Body) || IsOutside(newHead, BoardBoxColumns, BoardBoxRows) {
+		s.gameOver = true
 	}
 
 	s.Body = append(s.Body, newHead)
 }
 
-func (s *Snake) EnqueueDirections(lastMove SnakeDirection) {
+// EnqueueDirections queues a pending move. A direction that would reverse the
+// snake (relative to the last queued or executed direction) is ignored.
+func (s *Snake) EnqueueDirections(direction SnakeDirection) {
+	if s.isOpposite(direction) {
+		return
+	}
+
 	directions := s.LastDirections
 
 	for index, value := range directions {
 		if value == "" {
-			directions[index] = lastMove
-			break
+			directions[index] = direction
+			return
 		}
 	}
 }
@@ -150,24 +152,45 @@ func (s *Snake) DirectionCount() int {
 	return moves
 }
 
-func (s *Snake) isHeadOn(box Box) bool {
-	head := s.head()
+func (s *Snake) isOpposite(direction SnakeDirection) bool {
+	last := s.lastQueuedDirection()
+	if last == "" {
+		last = *s.Direction
+	}
 
-	if box.X == head.X && box.Y == head.Y {
-		return true
+	switch last {
+	case SnakeDirectionUp:
+		return direction == SnakeDirectionDown
+	case SnakeDirectionDown:
+		return direction == SnakeDirectionUp
+	case SnakeDirectionLeft:
+		return direction == SnakeDirectionRight
+	case SnakeDirectionRight:
+		return direction == SnakeDirectionLeft
 	}
 
 	return false
 }
 
+func (s *Snake) lastQueuedDirection() SnakeDirection {
+	for index := len(s.LastDirections) - 1; index >= 0; index-- {
+		if s.LastDirections[index] != "" {
+			return s.LastDirections[index]
+		}
+	}
+
+	return ""
+}
+
+func (s *Snake) isHeadOn(box Box) bool {
+	head := s.head()
+
+	return box.X == head.X && box.Y == head.Y
+}
+
 func (s *Snake) head() Box {
 	head := s.Body[len(s.Body)-1]
 	return head
-}
-
-func (s *Snake) tail() Box {
-	tail := s.Body[0]
-	return tail
 }
 
 func (s *Snake) Reset() {
@@ -185,4 +208,5 @@ func (s *Snake) Reset() {
 	initialDir := SnakeDirectionRight
 	s.Direction = &initialDir
 	s.LastDirections = &LastDirections{}
+	s.gameOver = false
 }

@@ -2,7 +2,6 @@ package board_view
 
 import (
 	"fmt"
-	"log"
 	model "terminal-snake/models"
 
 	"github.com/gdamore/tcell/v2"
@@ -10,7 +9,7 @@ import (
 )
 
 type ViewDeps struct {
-	IsGameOver      *bool
+	BestScore       int
 	Apple           *model.Apple
 	Snake           *model.Snake
 	Screen          tcell.Screen
@@ -19,20 +18,16 @@ type ViewDeps struct {
 }
 
 type View struct {
-	IsGameOver       *bool
+	bestScore        int
 	apple            *model.Apple
 	snake            *model.Snake
 	screen           tcell.Screen
 	boardCoordinates ViewBoardCoordinates
-	rune             rune
-	combining        []rune
 }
 
 type ViewBoardCoordinates struct {
-	boardLeftX   int
-	boardRightX  int
-	boardTopY    int
-	boardBottomY int
+	boardLeftX int
+	boardTopY  int
 }
 
 const (
@@ -41,27 +36,25 @@ const (
 )
 
 func NewView(deps ViewDeps) View {
-	boardCoordinates := ViewBoardCoordinates{}
-	const runeValue rune = 0
-	var combining []rune = nil
-
 	return View{
-		deps.IsGameOver,
-		deps.Apple,
-		deps.Snake,
-		deps.Screen,
-		boardCoordinates,
-		runeValue,
-		combining,
+		bestScore: deps.BestScore,
+		apple:     deps.Apple,
+		snake:     deps.Snake,
+		screen:    deps.Screen,
 	}
 }
 
-func (v View) SetView() {
+func (v *View) SetBestScore(score int) {
+	v.bestScore = score
+}
+
+func (v *View) SetView() {
 	v.screen.Clear()
 
 	viewBoardCoordinates, ok := v.viewBoardCoordinates()
 	if !ok {
-		log.Fatal()
+		// terminal too small to draw the board; skip this frame
+		return
 	}
 
 	v.boardCoordinates = viewBoardCoordinates
@@ -69,69 +62,43 @@ func (v View) SetView() {
 	v.setBackground()
 	v.setApple()
 	v.setSnake()
-
 	v.setStatusBar()
-	// setTopbar(screen)
+
 	v.screen.Show()
 }
 
 func (v *View) setStatusBar() {
-	viewBoardCoordinates, ok := v.viewBoardCoordinates()
-	if !ok {
-		return
-	}
-
 	textStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)
 
-	snakeLength := len(v.snake.Body)
+	boardCenterX := v.boardCoordinates.boardLeftX + (boardWidthViewCells / 2)
 
-	var statusText string
-	var restartText string
-	if *v.IsGameOver {
-		statusText = fmt.Sprintf("GAME OVER - SCORE: %d", snakeLength)
-		restartText = "Press 'r' to restart, esc to exit"
-	}
-	if !*v.IsGameOver {
-		statusText = fmt.Sprintf("SCORE: %d", snakeLength)
+	statusText := fmt.Sprintf("SCORE: %d", len(v.snake.Body))
+	if v.snake.IsGameOver() {
+		statusText = fmt.Sprintf("SCORE: %d - BEST SCORE: %d - GAME OVER", len(v.snake.Body), v.bestScore)
+		restartText := "Press 'r' to restart, esc to exit"
+		v.emitStr(boardCenterX-(len(restartText)/2), v.boardCoordinates.boardTopY+boardHeightViewCells+2, textStyle, restartText)
 	}
 
-	v.emitStr(
-		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(statusText)/2),
-		viewBoardCoordinates.boardTopY-2,
-		textStyle,
-		statusText,
-	)
-	v.emitStr(
-		viewBoardCoordinates.boardLeftX+(boardWidthViewCells/2)-(len(restartText)/2),
-		viewBoardCoordinates.boardTopY+boardHeightViewCells+2,
-		textStyle,
-		restartText,
-	)
+	v.emitStr(boardCenterX-(len(statusText)/2), v.boardCoordinates.boardTopY-2, textStyle, statusText)
 }
 
-func (v View) setBackground() {
-	// unoccupiedCellStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
-
+func (v *View) setBackground() {
 	backgroundStyle := tcell.StyleDefault.
 		Background(tcell.ColorDarkGreen).
 		Foreground(tcell.ColorWhite)
 
-	// v.screen.SetStyle(unoccupiedCellStyle)
-
 	x, y := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
 
-	for viewColumn := 0; viewColumn <= boardWidthViewCells; viewColumn += 2 {
-		for viewRow := 0; viewRow <= boardHeightViewCells; viewRow += 1 {
+	for viewColumn := 0; viewColumn < boardWidthViewCells; viewColumn += 2 {
+		for viewRow := 0; viewRow < boardHeightViewCells; viewRow++ {
 			for index := range 2 {
-				v.screen.SetContent(x+viewColumn+index, y+viewRow, v.rune, v.combining, backgroundStyle)
+				v.screen.SetContent(x+viewColumn+index, y+viewRow, 0, nil, backgroundStyle)
 			}
 		}
 	}
 }
 
-func (v View) setSnake() {
-	snake := v.snake
-
+func (v *View) setSnake() {
 	snakeStyle := tcell.StyleDefault.
 		Background(tcell.ColorRed).
 		Foreground(tcell.Color182)
@@ -140,68 +107,44 @@ func (v View) setSnake() {
 		Background(tcell.ColorPaleVioletRed).
 		Foreground(tcell.Color182)
 
-	snakeWithViewCells := model.Snake{}
-
-	snakeWithViewCells.Body = make([]model.Box, len(snake.Body))
-	copy(snakeWithViewCells.Body, snake.Body)
-
-	for index, value := range snakeWithViewCells.Body {
-		snakeWithViewCells.Body[index].X = value.X * 2
-	}
-
-	// head := snakeWithViewCells.Body[len(snake.Body)-1]
-	// if head.X < 0 || head.X > boardWidthViewCells || head.Y < 0 || head.Y > boardHeightViewCells {
-	// 	return
-	// }
-
 	x, y := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
+	body := v.snake.Body
+	headIndex := len(body) - 1
 
-	for index, value := range snakeWithViewCells.Body {
-		if index == len(snake.Body)-1 {
-			for index := range 2 {
-				v.screen.SetContent(x+value.X+index, y+value.Y, v.rune, v.combining, headStyle)
-			}
-		} else {
-			for index := range 2 {
-				v.screen.SetContent(x+value.X+index, y+value.Y, v.rune, v.combining, snakeStyle)
-			}
+	for index, box := range body {
+		style := snakeStyle
+		if index == headIndex {
+			style = headStyle
+		}
+
+		for cell := range 2 {
+			v.screen.SetContent(x+box.X*2+cell, y+box.Y, 0, nil, style)
 		}
 	}
 }
 
-func (v View) setApple() {
+func (v *View) setApple() {
 	appleStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorDarkRed)
 
-	boardX, boardY := v.boardCoordinates.boardLeftX, v.boardCoordinates.boardTopY
-	appleWithViewCells := model.Apple{
-		X: v.apple.X * 2,
-		Y: v.apple.Y,
-	}
+	x := v.boardCoordinates.boardLeftX + v.apple.X*2
+	y := v.boardCoordinates.boardTopY + v.apple.Y
 
-	x := boardX + appleWithViewCells.X
-	y := boardY + appleWithViewCells.Y
-
-	for index := range 2 {
-		v.screen.SetContent(x+index, y, v.rune, v.combining, appleStyle)
+	for cell := range 2 {
+		v.screen.SetContent(x+cell, y, 0, nil, appleStyle)
 	}
 }
 
-func (v View) viewBoardCoordinates() (result ViewBoardCoordinates, ok bool) {
+func (v *View) viewBoardCoordinates() (result ViewBoardCoordinates, ok bool) {
 	w, h := v.screen.Size()
 
 	if w < boardWidthViewCells || h < boardHeightViewCells {
-		ok = false
-		return
+		return ViewBoardCoordinates{}, false
 	}
 
-	ok = true
-
 	result.boardLeftX = (w - boardWidthViewCells) / 2
-	result.boardRightX = result.boardLeftX + boardWidthViewCells - 2
 	result.boardTopY = (h - boardHeightViewCells) / 2
-	result.boardBottomY = result.boardTopY + boardHeightViewCells - 1
 
-	return
+	return result, true
 }
 
 func (v *View) emitStr(x, y int, style tcell.Style, str string) {

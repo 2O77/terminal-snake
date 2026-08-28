@@ -1,54 +1,45 @@
 package model
 
-import (
-	"math/rand"
-)
+import "math/rand"
 
 const AppleInitialX = 10
 const AppleInitialY = 10
 
-type Apple Box
+type Apple struct {
+	X int
+	Y int
+}
 
 func NewApple() *Apple {
-	apple := &Apple{}
-
-	apple = &Apple{
+	return &Apple{
 		X: AppleInitialX,
 		Y: AppleInitialY,
 	}
-
-	return apple
 }
 
+// SummonApple moves the apple to a random free cell (not on the snake).
+// If the board is full the apple stays where it is.
 func (a *Apple) SummonApple(bannedBoxes []Box) {
-	apple := a.randomBox()
+	totalCells := BoardBoxColumns * BoardBoxRows
 
-	for _, box := range bannedBoxes {
-		if OneToOne(*apple, box) {
-
-			// it is recursive, be careful
-			a.SummonApple(bannedBoxes)
+	for len(bannedBoxes) < totalCells {
+		box := a.randomBox()
+		if !OneToMany(box, bannedBoxes) {
+			a.X = box.X
+			a.Y = box.Y
 			return
 		}
 	}
-
-	a.X = apple.X
-	a.Y = apple.Y
 }
 
-func (a *Apple) randomBox() *Box {
-	x := rand.Intn(BoardBoxColumns)
-	y := rand.Intn(BoardBoxRows)
-
-	return &Box{
-		X: x,
-		Y: y,
+func (a *Apple) randomBox() Box {
+	return Box{
+		X: rand.Intn(BoardBoxColumns),
+		Y: rand.Intn(BoardBoxRows),
 	}
 }
 
 func (a *Apple) Reset() {
-	*a = Apple{
-		AppleInitialX,
-		AppleInitialY,
-	}
+	a.X = AppleInitialX
+	a.Y = AppleInitialY
 }

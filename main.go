@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"terminal-snake/config"
 	model "terminal-snake/models"
 	"terminal-snake/timer"
 	board_view "terminal-snake/views"
@@ -11,22 +12,14 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-// func setTopbar(screen tcell.Screen) {
-// 	backgroundStyle := tcell.StyleDefault.
-// 		Background(tcell.ColorBlack).
-// 		Foreground(tcell.ColorWhite)
-
-// 	const runeValue rune = 0
-// 	var combining []rune = nil
-
-// 	screen.SetContent(170, 0, runeValue, combining, backgroundStyle)
-// }
-
 func main() {
 	logFile := initLogger()
 	defer logFile.Close()
 
-	isGameOver := false
+	cfg, err := config.Load()
+	if err != nil {
+		log.Print("couldn't load config: ", err)
+	}
 
 	screen, err := tcell.NewScreen()
 	if err != nil {
@@ -38,26 +31,25 @@ func main() {
 	}
 
 	apple := model.NewApple()
-	snake := model.NewSnake(model.SnakeDeps{
-		&isGameOver, apple,
+	snake := model.NewSnake(model.SnakeDeps{Apple: apple})
+	bestScore := cfg.BestScore
+
+	view := board_view.NewView(board_view.ViewDeps{
+		BestScore:       bestScore,
+		Apple:           apple,
+		Snake:           snake,
+		Screen:          screen,
+		BoardBoxColumns: model.BoardBoxColumns,
+		BoardBoxRows:    model.BoardBoxRows,
 	})
 
-	view := board_view.NewView(
-		board_view.ViewDeps{
-			&isGameOver,
-			apple,
-			snake,
-			screen,
-			model.BoardBoxColumns,
-			model.BoardBoxRows,
-		},
-	)
+	gameTimer := timer.NewTimer(timer.TimerDeps{Snake: snake})
+	gameTimer.SetTimer()
+	gameTimer.SetPeriod()
+
+	savedBestScore := false
 
 	defer quit(screen)
-
-	timer := timer.NewTimer(timer.TimerDeps{snake})
-	timer.SetTimer()
-	timer.SetPeriod()
 
 	for {
 		if screen.HasPendingEvent() {
@@ -70,39 +62,34 @@ func main() {
 					os.Exit(0)
 				}
 				if ev.Key() == tcell.KeyRune && ev.Rune() == 'r' {
-					reset(apple, snake, timer, &isGameOver)
+					reset(apple, snake, &gameTimer)
+					savedBestScore = false
 				}
-				if !isGameOver {
-					if ev.Key() == tcell.KeyUp {
-						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
-							snake.EnqueueDirections(model.SnakeDirectionUp)
-
-						}
-					}
-					if ev.Key() == tcell.KeyDown {
-						if *snake.Direction != model.SnakeDirectionDown && *snake.Direction != model.SnakeDirectionUp {
-							snake.EnqueueDirections(model.SnakeDirectionDown)
-						}
-					}
-					if ev.Key() == tcell.KeyRight {
-						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
-							snake.EnqueueDirections(model.SnakeDirectionRight)
-						}
-					}
-					if ev.Key() == tcell.KeyLeft {
-						if *snake.Direction != model.SnakeDirectionLeft && *snake.Direction != model.SnakeDirectionRight {
-							snake.EnqueueDirections(model.SnakeDirectionLeft)
-						}
+				if !snake.IsGameOver() {
+					switch ev.Key() {
+					case tcell.KeyUp:
+						snake.EnqueueDirections(model.SnakeDirectionUp)
+					case tcell.KeyDown:
+						snake.EnqueueDirections(model.SnakeDirectionDown)
+					case tcell.KeyRight:
+						snake.EnqueueDirections(model.SnakeDirectionRight)
+					case tcell.KeyLeft:
+						snake.EnqueueDirections(model.SnakeDirectionLeft)
 					}
 				}
 			}
 
-			timer.SetPeriod()
+			gameTimer.SetPeriod()
 		}
 
-		if time.Since(timer.Now) > timer.Period {
-			if !isGameOver {
-				switch snake.LastDirections[0] {
+		if time.Since(gameTimer.Now) > gameTimer.Period {
+			if !snake.IsGameOver() {
+				direction := snake.LastDirections[0]
+				if direction == "" {
+					direction = *snake.Direction
+				}
+
+				switch direction {
 				case model.SnakeDirectionRight:
 					snake.MoveSnakeRight()
 				case model.SnakeDirectionLeft:
@@ -111,27 +98,28 @@ func main() {
 					snake.MoveSnakeUp()
 				case model.SnakeDirectionDown:
 					snake.MoveSnakeDown()
-				default:
-					switch *snake.Direction {
-					case model.SnakeDirectionRight:
-						snake.MoveSnakeRight()
-					case model.SnakeDirectionLeft:
-						snake.MoveSnakeLeft()
-					case model.SnakeDirectionUp:
-						snake.MoveSnakeUp()
-					case model.SnakeDirectionDown:
-						snake.MoveSnakeDown()
-					}
 				}
 			}
 
 			snake.DequeueDirections()
-			timer.SetTimer()
-			timer.SetPeriod()
+			gameTimer.SetTimer()
+			gameTimer.SetPeriod()
+		}
 
+		if snake.IsGameOver() && !savedBestScore {
+			savedBestScore = true
+			if score := len(snake.Body); score > bestScore {
+				bestScore = score
+				view.SetBestScore(bestScore)
+				cfg.BestScore = bestScore
+				if err := cfg.Save(); err != nil {
+					log.Print("couldn't save best score: ", err)
+				}
+			}
 		}
 
 		view.SetView()
+		time.Sleep(5 * time.Millisecond)
 	}
 }
 
@@ -143,12 +131,10 @@ func quit(s tcell.Screen) {
 	}
 }
 
-func reset(apple *model.Apple, snake *model.Snake, timer timer.Timer, isGameOver *bool) {
+func reset(apple *model.Apple, snake *model.Snake, gameTimer *timer.Timer) {
 	snake.Reset()
 	apple.Reset()
-	timer.Reset(*snake)
-	*isGameOver = false
-
+	gameTimer.Reset(snake)
 }
 
 func initLogger() *os.File {
